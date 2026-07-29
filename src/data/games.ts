@@ -1,25 +1,43 @@
+export type PlatformType = 'PS4' | 'PS5' | 'Xbox S/X';
+
 export interface Game {
   id: string;
   title: string;
-  platform: 'PS4' | 'PS5' | 'PS4/PS5';
-  price: number;
-  rating: number; // 1-5
+  platforms: { 
+    name: PlatformType; 
+    priceSecundaria: number; // Precio más económico (compartida)
+    pricePrimaria: number;   // Precio más alto (cuenta propia)
+  }[];
+  rating: number;
   synopsis: string;
-  image: string; // URL de placeholder
+  image: string;
   genre: string;
   releaseYear: number;
   featured?: boolean;
 }
 
+// 👇 1. NÚMERO DE WHATSAPP CENTRALIZADO
+export const WHATSAPP_NUMBER = '3003766780'; // Cambia por tu número real (sin el +)
+
+// 👇 2. MENSAJES DE WHATSAPP CENTRALIZADOS
+export const WHATSAPP_MESSAGES = {
+  // 👇 DEBE SER UN STRING, NO UNA FUNCIÓN. Usa {title} y {platforms} como marcadores
+  buyGame: "¡Hola! 🎮 Quiero comprar este juego:\n\n🕹️ *{title}*\n📌 Formatos disponibles: {platforms}\n\n¿Cuál tengo disponible y cómo procedo con el pago?",
+  general: "¡Hola! 🎮 Quiero información sobre los juegos disponibles.",
+  contact: "¡Hola MC Games! 🎮 Necesito información."
+};
+
+
 export const games: Game[] = [
   {
     id: 'god-of-war-ragnarok',
     title: 'God of War Ragnarök',
-    platform: 'PS4/PS5',
-    price: 59.99,
+    platforms: [
+      { name: 'PS5', priceSecundaria: 40000, pricePrimaria: 80000 },
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
     rating: 5,
-    synopsis:
-      'Embárcate en un viaje épico y emotivo mientras Kratos y Atreus luchan por aferrarse a la verdad. El Fimbulvetr ya ha comenzado y ambos deben viajar a cada uno de los Nueve Reinos en busca de respuestas, mientras las fuerzas asgardianas se preparan para la batalla profetizada que traerá el fin del mundo.',
+    synopsis: 'Embárcate en un viaje épico y emotivo mientras Kratos y Atreus luchan por aferrarse a la verdad. El Fimbulvetr ya ha comenzado y ambos deben viajar a cada uno de los Nueve Reinos en busca de respuestas.',
     image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=800&fit=crop',
     genre: 'Acción / Aventura',
     releaseYear: 2022,
@@ -28,137 +46,101 @@ export const games: Game[] = [
   {
     id: 'spider-man-2',
     title: "Marvel's Spider-Man 2",
-    platform: 'PS5',
-    price: 69.99,
+    platforms: [
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
     rating: 5,
-    synopsis:
-      'Peter Parker y Miles Morales regresan en una nueva aventura épica. Con la ciudad de Nueva York más amenazada que nunca por Venom y Kraven el Cazador, ambos Spider-Man deberán enfrentarse a sus mayores desafíos mientras luchan por salvar la ciudad y a quienes aman.',
+    synopsis: 'Peter Parker y Miles Morales regresan en una nueva aventura épica. Con la ciudad de Nueva York más amenazada que nunca por Venom y Kraven el Cazador, ambos Spider-Man deberán enfrentarse a sus mayores desafíos.',
     image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&h=800&fit=crop',
     genre: 'Acción / Mundo Abierto',
     releaseYear: 2023,
     featured: true,
   },
   {
-    id: 'horizon-forbidden-west',
-    title: 'Horizon Forbidden West',
-    platform: 'PS4/PS5',
-    price: 49.99,
+    id: 'halo-infinite',
+    title: 'Halo Infinite',
+    platforms: [
+      { name: 'PS5', priceSecundaria: 40000, pricePrimaria: 80000 }
+    ],
     rating: 4,
-    synopsis:
-      'Aloy viaja al Oeste Prohibido, una frontera majestuosa pero peligrosa que oculta misteriosas amenazas nuevas. Explora tierras lejanas, lucha contra máquinas más grandes y asombrosas, y conoce a nuevas tribus mientras descubres los secretos de un mundo al borde del colapso.',
-    image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&h=800&fit=crop',
-    genre: 'RPG / Acción',
-    releaseYear: 2022,
+    synopsis: 'El Jefe Maestro regresa en la aventura más épica de la saga Halo. Explora el anillo Zeta, enfrenta a nuevos enemigos y descubre los misterios de los Forerunners en este shooter en primera persona de nueva generación.',
+    image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b2b28?w=600&h=800&fit=crop',
+    genre: 'Shooter / FPS',
+    releaseYear: 2021,
+    featured: true,
+  },
+  {
+    id: 'forza-horizon-5',
+    title: 'Forza Horizon 5',
+    platforms: [
+      { name: 'PS5', priceSecundaria: 40000, pricePrimaria: 80000 },
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
+    rating: 5,
+    synopsis: '¡Tu aventura Horizon definitiva te espera! Explora los vibrantes y cambiantes paisajes de México con acción de conducción ilimitada y divertida en cientos de los mejores autos del mundo.',
+    image: 'https://images.unsplash.com/photo-1547394765-185e1e68f34e?w=600&h=800&fit=crop',
+    genre: 'Carreras / Mundo Abierto',
+    releaseYear: 2021,
+    featured: true,
   },
   {
     id: 'the-last-of-us-part-2',
     title: 'The Last of Us Part II',
-    platform: 'PS4',
-    price: 39.99,
+    platforms: [
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
     rating: 5,
-    synopsis:
-      'Cinco años después de los eventos de The Last of Us, Ellie y Joel se han establecido en Jackson, Wyoming. Cuando un evento violento interrumpe esa paz, Ellie emprende un viaje implacable para hacer justicia y encontrar la paz interior, enfrentándose a las devastadoras consecuencias de sus acciones.',
+    synopsis: 'Cinco años después de los eventos de The Last of Us, Ellie y Joel se han establecido en Jackson, Wyoming. Cuando un evento violento interrumpe esa paz, Ellie emprende un viaje implacable para hacer justicia.',
     image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b2b28?w=600&h=800&fit=crop',
     genre: 'Acción / Survival',
     releaseYear: 2020,
-    featured: true,
   },
   {
-    id: 'final-fantasy-xvi',
-    title: 'Final Fantasy XVI',
-    platform: 'PS5',
-    price: 69.99,
+    id: 'starfield',
+    title: 'Starfield',
+    platforms: [
+      { name: 'PS5', priceSecundaria: 40000, pricePrimaria: 80000 },
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
     rating: 4,
-    synopsis:
-      'Clive Rosfield, primer hijo del Archiduque de Rosaria, se ve envuelto en una tragedia cuando su hogar es destruido. Jurando venganza, Clive se adentra en un mundo oscuro donde los Dominantes y sus Eikones son armas de guerra. Una historia épica de venganza, destino y cristales.',
-    image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600&h=800&fit=crop',
-    genre: 'RPG / Acción',
+    synopsis: 'Starfield es el primer RPG en más de 25 años de Bethesda Game Studios. En esta épica aventura espacial, crea a cualquier personaje y explora con una libertad sin precedentes mientras te embarcas en un viaje para resolver el mayor misterio de la humanidad.',
+    image: 'https://images.unsplash.com/photo-1614294149010-950b698f72c0?w=600&h=800&fit=crop',
+    genre: 'RPG / Espacial',
     releaseYear: 2023,
-  },
-  {
-    id: 'gran-turismo-7',
-    title: 'Gran Turismo 7',
-    platform: 'PS4/PS5',
-    price: 49.99,
-    rating: 4,
-    synopsis:
-      'El simulador de conducción definitivo regresa con más de 400 coches, circuitos legendarios y condiciones meteorológicas dinámicas. Experimenta la emoción de las carreras con gráficos fotorrealistas, físicas mejoradas y el regreso del modo campaña clásico de Gran Turismo.',
-    image: 'https://images.unsplash.com/photo-1547394765-185e1e68f34e?w=600&h=800&fit=crop',
-    genre: 'Carreras / Simulación',
-    releaseYear: 2022,
-  },
-  {
-    id: 'demon-souls',
-    title: "Demon's Souls",
-    platform: 'PS5',
-    price: 59.99,
-    rating: 5,
-    synopsis:
-      'El remake del clásico que inició el género Souls. Boletaria está envuelta en una niebla oscura y demonios hambrientos. Como guerrero solitario, deberás atravesar cinco reinos devastados, enfrentarte a jefes colosales y descubrir los secretos del Anciano. Gráficos de nueva generación que te dejarán sin aliento.',
-    image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&h=800&fit=crop',
-    genre: 'RPG / Souls-like',
-    releaseYear: 2020,
   },
   {
     id: 'gta-v',
     title: 'Grand Theft Auto V',
-    platform: 'PS4',
-    price: 29.99,
+    platforms: [
+      { name: 'PS5', priceSecundaria: 40000, pricePrimaria: 80000 },
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
     rating: 5,
-    synopsis:
-      'Tres criminales muy diferentes planean los atracos más audaces de sus vidas en la soleada Los Santos. Michael, Trevor y Franklin se entrelazan en una historia de crimen, lealtad y traición en el mundo abierto más detallado y vibrante jamás creado. Incluye acceso a GTA Online.',
+    synopsis: 'Tres criminales muy diferentes planean los atracos más audaces de sus vidas en la soleada Los Santos. Michael, Trevor y Franklin se entrelazan en una historia de crimen, lealtad y traición.',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=800&fit=crop',
     genre: 'Acción / Mundo Abierto',
     releaseYear: 2014,
   },
   {
-    id: 'ratchet-clank-rift',
-    title: 'Ratchet & Clank: Rift Apart',
-    platform: 'PS5',
-    price: 49.99,
+    id: 'gears-5',
+    title: 'Gears 5',
+    platforms: [
+      { name: 'PS5', priceSecundaria: 40000, pricePrimaria: 80000 },
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
     rating: 4,
-    synopsis:
-      'El malvado Dr. Nefarious ha abierto portales dimensionales que amenazan con destruir la realidad. Ratchet y Clank, junto a una nueva Lombax llamada Rivet, saltan entre dimensiones en una aventura intergaláctica llena de humor, acción desenfrenada y mundos visualmente impresionantes.',
+    synopsis: 'Desde los cenizas de una nación devastada, nace una leyenda. Kait Diaz debe desenterrar su conexión con el enemigo y descubrir la verdadera amenaza para Sera en esta épica aventura de acción en tercera persona.',
     image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=600&h=800&fit=crop',
-    genre: 'Plataformas / Acción',
-    releaseYear: 2021,
-  },
-  {
-    id: 'bloodborne',
-    title: 'Bloodborne',
-    platform: 'PS4',
-    price: 19.99,
-    rating: 5,
-    synopsis:
-      'Despierta en la ciudad gótica de Yharnam, un lugar maldito plagado de una enfermedad terrible. Como cazador, deberás enfrentarte a bestias horribles y descubrir los oscuros secretos que se esconden tras la noche de cacería. Rápido, brutal y atmosférico, una obra maestra de FromSoftware.',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&h=800&fit=crop',
-    genre: 'RPG / Souls-like',
-    releaseYear: 2015,
-  },
-  {
-    id: 'returnal',
-    title: 'Returnal',
-    platform: 'PS5',
-    price: 49.99,
-    rating: 4,
-    synopsis:
-      'Selene se estrella en un planeta alienígena hostil y queda atrapada en un ciclo de muerte y renacimiento. Cada vez que muere, el mundo cambia a su alrededor. Combina la acción frenética de un shooter con la exploración roguelike en una experiencia psicológica y visualmente deslumbrante.',
-    image: 'https://images.unsplash.com/photo-1614294149010-950b698f72c0?w=600&h=800&fit=crop',
-    genre: 'Shooter / Roguelike',
-    releaseYear: 2021,
-  },
-  {
-    id: 'uncharted-legacy',
-    title: 'Uncharted: Legacy of Thieves',
-    platform: 'PS4/PS5',
-    price: 39.99,
-    rating: 4,
-    synopsis:
-      'Colección remasterizada que incluye Uncharted 4: El Desenlace del Ladrón y Uncharted: El Legado Perdido. Acompaña a Nathan Drake en su última aventura y a Chloe Frazer en una búsqueda épica por la India. Acción cinematográfica, puzzles ingeniosos y paisajes impresionantes.',
-    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=800&fit=crop',
-    genre: 'Acción / Aventura',
-    releaseYear: 2022,
+    genre: 'Shooter / Acción',
+    releaseYear: 2019,
   },
 ];
 
-export const WHATSAPP_NUMBER = '1234567890'; // <-- Cambia por el número real con código de país
+// Función para formatear el precio en pesos colombianos (COP)
+export const formatCOP = (amount: number) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0
+  }).format(amount);
+};

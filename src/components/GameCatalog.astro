@@ -1,143 +1,104 @@
 ---
-import { games, WHATSAPP_NUMBER, type Game } from '../data/games';
+import { games, WHATSAPP_NUMBER, WHATSAPP_MESSAGES, type Game } from '../data/games';
 
-function getStars(rating: number): string {
-  return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-}
+const formatCOP = (amount: number) => {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
+};
 
-function getPlatformColor(platform: string): string {
-  switch (platform) {
-    case 'PS5':
-      return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    case 'PS4':
-      return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-    default:
-      return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+const getMinPrimaryPrice = (platforms: Game['platforms']) => {
+  return Math.min(...platforms.map(p => p.pricePrimaria));
+};
+const getPlatformNames = (platforms: Game['platforms']) => platforms.map(p => p.name).join(' / ');
+
+function getPlatformBadgeColor(platforms: Game['platforms']) {
+  if (platforms.length > 1) return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+  switch (platforms[0].name) {
+    case 'PS5': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    case 'PS4': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
+    case 'Xbox S/X': return 'bg-green-500/20 text-green-400 border-green-500/30';
+    default: return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
   }
 }
 ---
 
 <section id="catalogo" class="relative py-20 md:py-32 px-4">
-  <!-- Section Background Accent -->
   <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-neon-purple/5 rounded-full blur-3xl pointer-events-none"></div>
 
   <div class="max-w-7xl mx-auto relative z-10">
-    <!-- Section Header -->
     <div class="text-center mb-12 md:mb-16">
-      <span class="inline-block px-4 py-1.5 rounded-full bg-neon-purple/10 border border-neon-purple/20 text-neon-purple text-xs font-gaming font-semibold tracking-wider mb-4">
-        CATÁLOGO
-      </span>
+      <span class="inline-block px-4 py-1.5 rounded-full bg-neon-purple/10 border border-neon-purple/20 text-neon-purple text-xs font-gaming font-semibold tracking-wider mb-4">CATÁLOGO</span>
       <h2 class="font-gaming font-black text-3xl md:text-5xl mb-4">
         <span class="text-gray-900 dark:text-white">NUESTROS </span>
         <span class="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">JUEGOS</span>
       </h2>
-      <p class="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-        Explora nuestra colección de títulos para PlayStation. Filtra por plataforma y encuentra tu próximo juego favorito.
-      </p>
+      <p class="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">Explora nuestra colección de títulos. Filtra por plataforma y encuentra tu próximo juego favorito.</p>
     </div>
 
-    <!-- Filter Buttons -->
     <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
-      <button
-        data-filter="all"
-        class="filter-btn active px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-neon-blue bg-neon-blue text-white transition-all duration-300"
-      >
-        🎮 Todos
-      </button>
-      <button
-        data-filter="PS4"
-        class="filter-btn px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-gray-300 dark:border-dark-600 text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-400 transition-all duration-300"
-      >
-        🕹️ PS4
-      </button>
-      <button
-        data-filter="PS5"
-        class="filter-btn px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-gray-300 dark:border-dark-600 text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-400 transition-all duration-300"
-      >
-        🎯 PS5
-      </button>
-      <button
-        data-filter="PS4/PS5"
-        class="filter-btn px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-gray-300 dark:border-dark-600 text-gray-600 dark:text-gray-400 hover:border-purple-400 hover:text-purple-400 transition-all duration-300"
-      >
-        ⚡ PS4/PS5
-      </button>
+      <button data-filter="all" class="filter-btn active px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-neon-blue bg-neon-blue text-white transition-all duration-300">🎮 Todos</button>
+      <button data-filter="PS4" class="filter-btn px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-gray-300 dark:border-dark-600 text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-400 transition-all duration-300">🕹️ PS4</button>
+      <button data-filter="PS5" class="filter-btn px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-gray-300 dark:border-dark-600 text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-400 transition-all duration-300">🎯 PS5</button>
+      <button data-filter="Xbox S/X" class="filter-btn px-6 py-2.5 rounded-full font-gaming text-sm font-semibold border-2 border-gray-300 dark:border-dark-600 text-gray-600 dark:text-gray-400 hover:border-green-400 hover:text-green-400 transition-all duration-300">🟢 Xbox S/X</button>
     </div>
 
-    <!-- Games Grid -->
     <div id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
       {games.map((game: Game, index: number) => (
         <div
-          class="game-card group relative rounded-2xl overflow-hidden bg-white dark:bg-dark-700 border border-gray-200 dark:border-dark-600 glow-border cursor-pointer"
-          data-platform={game.platform}
+          class="game-card group relative rounded-2xl overflow-hidden bg-white dark:bg-dark-700 border border-gray-200 dark:border-dark-600 glow-border"
+          data-platforms={game.platforms.map(p => p.name).join(',')}
           data-game-id={game.id}
+          data-platforms-json={JSON.stringify(game.platforms)}
           style={`animation-delay: ${index * 0.1}s`}
         >
-          {/* Image */}
           <div class="relative h-56 overflow-hidden">
-            <img
-              src={game.image}
-              alt={game.title}
-              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              loading="lazy"
-            />
+            <img src={game.image} alt={game.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-
-            {/* Platform Badge */}
-            <span class={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-gaming font-bold border ${getPlatformColor(game.platform)}`}>
-              {game.platform}
+            
+            <span class="platform-badge absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-gaming font-bold border ${getPlatformBadgeColor(game.platforms)}">
+              {getPlatformNames(game.platforms)}
             </span>
 
-            {/* Featured Badge */}
-            {game.featured && (
-              <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-gaming font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-black">
-                ⭐ TOP
-              </span>
-            )}
-
-            {/* Price Overlay */}
+            {game.featured && <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-gaming font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-black">⭐ TOP</span>}
+            
             <div class="absolute bottom-3 right-3">
-              <div class="px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10 shimmer-price">
-                <span class="font-gaming font-black text-xl text-neon-green">${game.price}</span>
-              </div>
-            </div>
+  <div class="px-4 py-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10 shimmer-price">
+    <span class="price-display font-gaming font-black text-xl text-neon-green">
+      {game.platforms.length > 1 ? 'Desde ' : ''}{formatCOP(getMinPrimaryPrice(game.platforms))}
+    </span>
+  </div>
+</div>
           </div>
 
-          {/* Content */}
           <div class="p-5">
-            <h3 class="font-gaming font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2 group-hover:text-neon-blue transition-colors line-clamp-1">
-              {game.title}
-            </h3>
-
+            <h3 class="font-gaming font-bold text-sm md:text-base text-gray-900 dark:text-white mb-2 group-hover:text-neon-blue transition-colors line-clamp-1">{game.title}</h3>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-gray-500 dark:text-gray-400">{game.genre}</span>
               <span class="text-gray-300 dark:text-gray-600">•</span>
               <span class="text-xs text-gray-500 dark:text-gray-400">{game.releaseYear}</span>
             </div>
-
-            {/* Stars */}
             <div class="flex items-center gap-1 mb-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <span class={`text-lg ${i < game.rating ? 'star-filled' : 'star-empty'}`}>★</span>
               ))}
               <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">({game.rating}.0)</span>
             </div>
-
-            {/* CTA */}
-            <button
-              class="w-full py-2.5 rounded-xl bg-gradient-to-r from-neon-blue/10 to-neon-purple/10 dark:from-neon-blue/20 dark:to-neon-purple/20 border border-neon-blue/20 dark:border-neon-blue/30 text-neon-blue font-gaming text-xs font-bold hover:from-neon-blue hover:to-neon-purple hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+            
+            <!-- 👇 BOTÓN EXAGERADAMENTE VISIBLE -->
+            <button 
+              class="btn-ver-detalles w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-neon-blue to-neon-purple text-white font-gaming text-sm font-bold hover:from-neon-purple hover:to-neon-pink transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-neon-blue/30 hover:scale-[1.02] border-2 border-white/20" 
+              data-game-id={game.id}
             >
-              <span>Ver Detalles</span>
-              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
+              <span>Ver Detalles</span>
             </button>
           </div>
         </div>
       ))}
     </div>
 
-    <!-- No Results Message -->
     <div id="no-results" class="hidden text-center py-20">
       <div class="text-6xl mb-4">🎮</div>
       <h3 class="font-gaming font-bold text-xl text-gray-900 dark:text-white mb-2">No se encontraron juegos</h3>
@@ -146,176 +107,247 @@ function getPlatformColor(platform: string): string {
   </div>
 </section>
 
-<script>
-  // ===== FILTER LOGIC =====
-  const filterButtons = document.querySelectorAll('[data-filter]');
-  const gameCards = document.querySelectorAll('[data-game-id]');
-  const noResults = document.getElementById('no-results');
+<!-- 👇 MODAL INTEGRADO AQUÍ -->
+<div id="game-modal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4 modal-backdrop bg-black/70 dark:bg-black/80">
+  <div id="modal-content" class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-dark-800 shadow-2xl shadow-neon-blue/10"></div>
+</div>
 
-  filterButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const filter = (btn as HTMLElement).dataset.filter;
+<!-- 👇 SCRIPT UNIFICADO (JS PURO, SIN ERRORES TS) -->
+<script define:vars={{ wNumber: WHATSAPP_NUMBER, wBuyMsg: WHATSAPP_MESSAGES.buyGame }}>
+  document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const noResults = document.getElementById('no-results');
+    let currentAccountType = 'primaria'; // Por defecto mostramos el más económico
 
-      // Update active button styles
-      filterButtons.forEach((b) => {
-        b.classList.remove('bg-neon-blue', 'text-white', 'border-neon-blue');
-        b.classList.add('border-gray-300', 'dark:border-dark-600', 'text-gray-600', 'dark:text-gray-400');
-      });
-      btn.classList.add('bg-neon-blue', 'text-white', 'border-neon-blue');
-      btn.classList.remove('border-gray-300', 'dark:border-dark-600', 'text-gray-600', 'dark:text-gray-400');
+    const formatCOP = function(amount) {
+      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
+    };
 
-      // Filter cards
-      let visibleCount = 0;
-      gameCards.forEach((card) => {
-        const platform = (card as HTMLElement).dataset.platform;
-        const shouldShow = filter === 'all' || platform === filter || platform?.includes(filter!);
+    // ===== 1. FILTROS (Igual que antes) =====
+    filterButtons.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        const currentBtn = e.currentTarget;
+        if (!(currentBtn instanceof HTMLElement)) return;
+        
+        const filter = currentBtn.getAttribute('data-filter') || 'all';
+        const gameCards = document.querySelectorAll('[data-game-id]');
 
-        if (shouldShow) {
-          (card as HTMLElement).style.display = '';
-          (card as HTMLElement).style.opacity = '0';
-          (card as HTMLElement).style.transform = 'translateY(20px)';
-          requestAnimationFrame(() => {
-            (card as HTMLElement).style.transition = 'all 0.4s ease';
-            (card as HTMLElement).style.opacity = '1';
-            (card as HTMLElement).style.transform = 'translateY(0)';
-          });
-          visibleCount++;
-        } else {
-          (card as HTMLElement).style.display = 'none';
+        filterButtons.forEach(function(b) {
+          b.classList.remove('bg-neon-blue', 'text-white', 'border-neon-blue');
+          b.classList.add('border-gray-300', 'dark:border-dark-600', 'text-gray-600', 'dark:text-gray-400');
+        });
+        currentBtn.classList.add('bg-neon-blue', 'text-white', 'border-neon-blue');
+        currentBtn.classList.remove('border-gray-300', 'dark:border-dark-600', 'text-gray-600', 'dark:text-gray-400');
+
+        let visibleCount = 0;
+
+        gameCards.forEach(function(card) {
+          if (!(card instanceof HTMLElement)) return;
+          const platformsJson = card.getAttribute('data-platforms-json');
+          const platforms = platformsJson ? JSON.parse(platformsJson) : [];
+          const shouldShow = filter === 'all' || platforms.some(function(p) { return p.name === filter; });
+
+          if (shouldShow) {
+            card.style.display = '';
+            const priceEl = card.querySelector('.price-display');
+            const badgeEl = card.querySelector('.platform-badge');
+            
+           if (filter === 'all') {
+  const minPrimaryPrice = Math.min(...platforms.map(function(p) { return p.pricePrimaria; }));
+  const prefix = platforms.length > 1 ? 'Desde ' : '';
+  if (priceEl) priceEl.textContent = prefix + formatCOP(minPrimaryPrice); // Sin "(Sec)"
+  if (badgeEl) badgeEl.textContent = platforms.map(function(p) { return p.name; }).join(' / ');
+} else {
+  const selected = platforms.find(function(p) { return p.name === filter; });
+  if (selected) {
+    if (priceEl) priceEl.textContent = formatCOP(selected.pricePrimaria); // 👈 Usa precio primaria
+    if (badgeEl) badgeEl.textContent = selected.name;
+  }
+}
+
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            requestAnimationFrame(function() {
+              card.style.transition = 'all 0.4s ease';
+              card.style.opacity = '1';
+              card.style.transform = 'translateY(0)';
+            });
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        if (noResults) {
+          if (visibleCount === 0) noResults.classList.remove('hidden');
+          else noResults.classList.add('hidden');
         }
       });
+    });
 
-      // Toggle no results message
-      if (noResults) {
-        noResults.classList.toggle('hidden', visibleCount > 0);
+    // ===== 2. MODAL CON INTERRUPTOR DE CUENTA =====
+    document.addEventListener('click', function(e) {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest('.btn-ver-detalles');
+      if (!btn) return;
+      
+      const gameId = btn.getAttribute('data-game-id');
+      if (!gameId) return;
+      currentAccountType = 'secundaria'; // Reiniciar a secundaria al abrir
+      openModal(gameId);
+    });
+
+    function openModal(gameId) {
+      const modal = document.getElementById('game-modal');
+      const modalContent = document.getElementById('modal-content');
+      if (!modal || !modalContent || !(modal instanceof HTMLElement) || !(modalContent instanceof HTMLElement)) return;
+
+      const card = document.querySelector('[data-game-id="' + gameId + '"]');
+      if (!card || !(card instanceof HTMLElement)) return;
+
+      const titleEl = card.querySelector('h3');
+      const title = titleEl ? titleEl.textContent : '';
+      const imgEl = card.querySelector('img');
+      const image = imgEl ? imgEl.src : '';
+      const genreEls = card.querySelectorAll('.text-xs');
+      const genre = genreEls[0] ? genreEls[0].textContent : '';
+      const year = genreEls[1] ? genreEls[1].textContent : '';
+      const stars = card.querySelectorAll('.star-filled').length;
+
+      const platformsJson = card.getAttribute('data-platforms-json');
+      const platforms = platformsJson ? JSON.parse(platformsJson) : [];
+      
+      const gamesData = window.__gamesData || {};
+      const gameInfo = gamesData[gameId] || {};
+      const synopsis = gameInfo.synopsis || 'Sinopsis no disponible.';
+      const fullTitle = gameInfo.title || title || '';
+
+      let starsHtml = '';
+      for (let i = 0; i < 5; i++) {
+        starsHtml += '<span class="text-2xl ' + (i < stars ? 'star-filled' : 'star-empty') + '">★</span>';
       }
+
+      // Función para renderizar el contenido del modal según el tipo de cuenta
+      function renderModalContent() {
+        let platformsListHtml = '';
+        let platformsTextForWA = '';
+        let minPrice = Infinity;
+        
+        for (let i = 0; i < platforms.length; i++) {
+          const p = platforms[i];
+          const currentPrice = currentAccountType === 'primaria' ? p.pricePrimaria : p.priceSecundaria;
+          if (currentPrice < minPrice) minPrice = currentPrice;
+
+          const icon = p.name === 'PS5' ? '🎯' : (p.name === 'PS4' ? '🕹️' : '🟢');
+          const typeLabel = currentAccountType === 'primaria' ? '(Primaria)' : '(Secundaria)';
+          
+          platformsListHtml += '<div class="flex justify-between items-center text-sm py-2 border-b border-gray-100 dark:border-dark-600 last:border-0">' +
+            '<span class="text-gray-600 dark:text-gray-300 font-medium flex items-center gap-2">' + icon + ' ' + p.name + ' <span class="text-xs text-neon-purple">' + typeLabel + '</span></span>' +
+            '<span class="font-gaming font-bold text-neon-green">' + formatCOP(currentPrice) + '</span>' +
+          '</div>';
+          
+          platformsTextForWA += p.name + ' ' + typeLabel + ' (' + formatCOP(currentPrice) + ')';
+          if (i < platforms.length - 1) platformsTextForWA += ', ';
+        }
+
+        const accountLabel = currentAccountType === 'primaria' ? 'Cuenta Primaria' : 'Cuenta Secundaria';
+        const waMsg = wBuyMsg
+          .replace('{title}', fullTitle)
+          .replace('{platforms}', platformsTextForWA + ' | Tipo: ' + accountLabel);
+        
+        const whatsappUrl = 'https://wa.me/' + wNumber + '?text=' + encodeURIComponent(waMsg);
+        const oldPrice = formatCOP(Math.round(minPrice * 1.3));
+
+        // Botones del interruptor
+        const btnSecClass = currentAccountType === 'secundaria' ? 'bg-neon-blue text-white shadow-lg shadow-neon-blue/30' : 'bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400';
+        const btnPriClass = currentAccountType === 'primaria' ? 'bg-neon-purple text-white shadow-lg shadow-neon-purple/30' : 'bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400';
+
+        modalContent.innerHTML = 
+          '<div class="relative md:flex animate-scale-in">' +
+            '<button id="close-modal" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500 transition-colors duration-300">' +
+              '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>' +
+            '</button>' +
+            '<div class="md:w-2/5 relative">' +
+              '<img src="' + image + '" alt="' + fullTitle + '" class="w-full h-64 md:h-full object-cover" />' +
+              '<div class="absolute inset-0 bg-gradient-to-r from-transparent to-white dark:to-dark-800 hidden md:block"></div>' +
+              '<div class="absolute inset-0 bg-gradient-to-t from-white dark:from-dark-800 to-transparent md:hidden"></div>' +
+            '</div>' +
+            '<div class="md:w-3/5 p-6 md:p-8 bg-white dark:bg-dark-800">' +
+              '<span class="inline-block px-3 py-1 rounded-full text-xs font-gaming font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 mb-3">' + platforms.map(function(p) { return p.name; }).join(' / ') + '</span>' +
+              '<h2 class="font-gaming font-black text-2xl md:text-3xl text-gray-900 dark:text-white mb-3">' + fullTitle + '</h2>' +
+              
+              // 👇 INTERRUPTOR DE TIPO DE CUENTA
+              '<div class="flex items-center justify-center gap-2 mb-6 p-2 bg-gray-100 dark:bg-dark-700 rounded-xl">' +
+                '<button id="toggle-sec" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 ' + btnSecClass + '">Secundaria (Económica)</button>' +
+                '<button id="toggle-pri" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 ' + btnPriClass + '">Primaria (Completa)</button>' +
+              '</div>' +
+
+              '<div class="flex items-center gap-3 mb-4">' +
+                '<span class="text-sm text-gray-500 dark:text-gray-400">' + genre + '</span>' +
+                '<span class="text-gray-300 dark:text-gray-600">•</span>' +
+                '<span class="text-sm text-gray-500 dark:text-gray-400">' + year + '</span>' +
+              '</div>' +
+              '<div class="flex items-center gap-1 mb-5">' + starsHtml + '<span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(' + stars + '.0 / 5.0)</span></div>' +
+              
+              '<div class="mb-6 bg-gray-50 dark:bg-dark-700 p-4 rounded-xl">' +
+                '<h3 class="font-gaming font-bold text-sm text-neon-purple mb-3 flex items-center gap-2">💰 PRECIOS DISPONIBLES</h3>' +
+                '<div class="space-y-1">' + platformsListHtml + '</div>' +
+              '</div>' +
+
+              '<div class="mb-6">' +
+                '<h3 class="font-gaming font-bold text-sm text-neon-purple mb-2">SINOPSIS</h3>' +
+                '<p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">' + synopsis + '</p>' +
+              '</div>' +
+              
+              '<div class="flex items-center gap-4 mb-6">' +
+                '<span class="font-gaming font-black text-3xl text-neon-green">' + formatCOP(minPrice) + '</span>' +
+                '<span class="text-sm text-gray-400 line-through">' + oldPrice + '</span>' +
+                '<span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 text-xs font-bold">-30% OFF</span>' +
+              '</div>' +
+              
+              '<a href="' + whatsappUrl + '" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-green-500 hover:bg-green-600 text-white font-gaming font-bold text-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25 whatsapp-pulse">' +
+                '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>' +
+                '¡Quiero comprar este juego!' +
+              '</a>' +
+            '</div>' +
+          '</div>';
+
+        // 👇 EVENTOS DEL INTERRUPTOR
+        document.getElementById('toggle-sec')?.addEventListener('click', function() {
+          currentAccountType = 'secundaria';
+          renderModalContent();
+        });
+        document.getElementById('toggle-pri')?.addEventListener('click', function() {
+          currentAccountType = 'primaria';
+          renderModalContent();
+        });
+      }
+
+      // Renderizar por primera vez
+      renderModalContent();
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+
+      const closeBtn = document.getElementById('close-modal');
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function(ev) {
+        if (ev.target === modal) closeModal();
+      });
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('game-modal');
+      if (!modal || !(modal instanceof HTMLElement)) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
     });
-  });
-
-  // ===== MODAL LOGIC =====
-  const gamesData: Record<string, any> = {};
-
-  // Populate from DOM data attributes + inject from script
-  document.querySelectorAll('[data-game-id]').forEach((card) => {
-    card.addEventListener('click', () => {
-      const gameId = (card as HTMLElement).dataset.gameId;
-      openModal(gameId!);
-    });
-  });
-
-  function openModal(gameId: string) {
-    const modal = document.getElementById('game-modal');
-    const modalContent = document.getElementById('modal-content');
-    if (!modal || !modalContent) return;
-
-    // Find the card to extract data
-    const card = document.querySelector(`[data-game-id="${gameId}"]`);
-    if (!card) return;
-
-    const title = card.querySelector('h3')?.textContent || '';
-    const image = card.querySelector('img')?.src || '';
-    const price = card.querySelector('.text-neon-green')?.textContent || '';
-    const genre = card.querySelectorAll('.text-xs')[0]?.textContent || '';
-    const year = card.querySelectorAll('.text-xs')[1]?.textContent || '';
-    const platform = (card as HTMLElement).dataset.platform || '';
-    const stars = card.querySelectorAll('.star-filled').length;
-
-    // Synopsis from data (we'll store it in a global)
-    const synopsis = (window as any).__gamesData?.[gameId]?.synopsis || 'Sinopsis no disponible.';
-    const fullTitle = (window as any).__gamesData?.[gameId]?.title || title;
-
-    const starsHtml = Array.from({ length: 5 })
-      .map((_, i) => `<span class="text-2xl ${i < stars ? 'star-filled' : 'star-empty'}">★</span>`)
-      .join('');
-
-    const whatsappMsg = encodeURIComponent(`¡Hola! 🎮 Quiero comprar este juego:\n\n🕹️ *${fullTitle}*\n💰 Precio: ${price}\n📌 Plataforma: ${platform}\n\n¿Está disponible?`);
-    const whatsappUrl = `https://wa.me/${(window as any).__whatsappNumber}?text=${whatsappMsg}`;
-
-    modalContent.innerHTML = `
-      <div class="relative md:flex animate-scale-in">
-        <!-- Close Button -->
-        <button id="close-modal" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500 transition-colors duration-300">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        <!-- Image -->
-        <div class="md:w-2/5 relative">
-          <img src="${image}" alt="${fullTitle}" class="w-full h-64 md:h-full object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent to-white dark:to-dark-800 hidden md:block"></div>
-          <div class="absolute inset-0 bg-gradient-to-t from-white dark:from-dark-800 to-transparent md:hidden"></div>
-        </div>
-
-        <!-- Details -->
-        <div class="md:w-3/5 p-6 md:p-8 bg-white dark:bg-dark-800">
-          <span class="inline-block px-3 py-1 rounded-full text-xs font-gaming font-bold bg-neon-blue/20 text-neon-blue border border-neon-blue/30 mb-3">
-            ${platform}
-          </span>
-          <h2 class="font-gaming font-black text-2xl md:text-3xl text-gray-900 dark:text-white mb-3">${fullTitle}</h2>
-
-          <div class="flex items-center gap-3 mb-4">
-            <span class="text-sm text-gray-500 dark:text-gray-400">${genre}</span>
-            <span class="text-gray-300 dark:text-gray-600">•</span>
-            <span class="text-sm text-gray-500 dark:text-gray-400">${year}</span>
-          </div>
-
-          <!-- Stars -->
-          <div class="flex items-center gap-1 mb-5">
-            ${starsHtml}
-            <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">(${stars}.0 / 5.0)</span>
-          </div>
-
-          <!-- Synopsis -->
-          <div class="mb-6">
-            <h3 class="font-gaming font-bold text-sm text-neon-purple mb-2">SINOPSIS</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">${synopsis}</p>
-          </div>
-
-          <!-- Price -->
-          <div class="flex items-center gap-4 mb-6">
-            <span class="font-gaming font-black text-3xl text-neon-green">${price}</span>
-            <span class="text-sm text-gray-400 line-through">$${(parseFloat(price.replace('$', '')) * 1.3).toFixed(2)}</span>
-            <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 text-xs font-bold">-23%</span>
-          </div>
-
-          <!-- WhatsApp CTA -->
-          <a
-            href="${whatsappUrl}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-green-500 hover:bg-green-600 text-white font-gaming font-bold text-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25 whatsapp-pulse"
-          >
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            ¡Quiero comprar este juego!
-          </a>
-        </div>
-      </div>
-    `;
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.style.overflow = 'hidden';
-
-    // Close modal events
-    document.getElementById('close-modal')?.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-  }
-
-  function closeModal() {
-    const modal = document.getElementById('game-modal');
-    if (!modal) return;
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.body.style.overflow = '';
-  }
-
-  // Close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
   });
 </script>
