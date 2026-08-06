@@ -1,0 +1,49 @@
+---
+// src/components/McGamesLogo.astro
+interface Props {
+  class?: string;
+  variant?: 'full' | 'icon';
+}
+
+const { class: className = "w-12 h-9", variant = "full" } = Astro.props;
+---
+
+<svg viewBox="0 0 320 220" fill="none" xmlns="http://www.w3.org/2000/svg" class={className}>
+  <defs>
+    <!-- Degradado Dorado MC GAMES -->
+    <linearGradient id="goldGradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="45%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ondas de Señal Superior Izquierda -->
+  <path d="M 105 32 C 120 20 145 18 160 22" stroke="url(#goldGradMain)" stroke-width="4" stroke-linecap="round" />
+  <path d="M 112 42 C 125 32 142 30 155 34" stroke="url(#goldGradMain)" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Silueta del Control de Videojuego -->
+  <g stroke="url(#goldGradMain)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 80 85 C 80 65 105 55 125 55 L 195 55 C 215 55 240 65 240 85 C 245 110 235 155 210 175 C 195 187 180 170 170 150 C 165 140 155 140 150 150 C 140 170 125 187 110 175 C 85 155 75 110 80 85 Z" />
+    <path d="M 102 140 C 105 155 110 162 112 165" stroke-width="3" />
+    <path d="M 95 130 C 97 142 101 150 103 153" stroke-width="2.5" opacity="0.85" />
+
+    <!-- D-Pad Direccional -->
+    <g transform="translate(198, 72)">
+      <path d="M -7 -15 L 7 -15 L 7 -7 L 15 -7 L 15 7 L 7 7 L 7 15 L -7 15 L -7 7 L -15 7 L -15 -7 L -7 -7 Z" fill="none" stroke="url(#goldGradMain)" stroke-width="2.5" />
+    </g>
+
+    <!-- Touchpad / Pantalla Central -->
+    <path d="M 120 58 L 148 58 C 152 58 155 62 153 68 L 140 92 C 138 95 133 98 128 98 L 115 98 C 110 98 106 94 108 88 L 115 64 C 117 60 120 58 124 58 Z" fill="none" stroke="url(#goldGradMain)" stroke-width="3" />
+  </g>
+
+  <!-- Banner Blanco MC GAMES -->
+  {variant === 'full' && (
+    <g id="mc-games-banner">
+      <rect x="55" y="98" width="210" height="46" rx="3" fill="#FFFFFF" stroke="#0B0F17" stroke-width="2.5" />
+      <text x="160" y="130" text-anchor="middle" fill="#000000" font-size="26" font-weight="900" font-family="'Orbitron', sans-serif" letter-spacing="2.5">
+        MC GAMES
+      </text>
+    </g>
+  )}
+</svg>

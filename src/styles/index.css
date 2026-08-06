@@ -1,0 +1,20 @@
+/* src/index.css */
+:root {
+  /* Marca MC GAMES - Dorado Premium */
+  --color-brand-primary: #f59e0b;       /* Dorado Principal (Amber 500) */
+  --color-brand-light: #fbbf24;         /* Dorado Brillante (Amber 400) */
+  --color-brand-dark: #d97706;          /* Dorado Oscuro (Amber 600) */
+  --color-brand-glow: rgba(245, 158, 11, 0.4); /* Resplandor */
+
+  /* Fondos y Superficies Dark Gaming */
+  --color-bg-dark: #0b0f17;             /* Fondo de la Aplicación */
+  --color-card-bg: #111827;            /* Tarjetas y Modales */
+  --color-card-border: rgba(245, 158, 11, 0.2);
+
+  /* WhatsApp Verde Oficial */
+  --color-whatsapp: #25d366;
+
+  /* Fuentes */
+  --font-gaming: 'Orbitron', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}

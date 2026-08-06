@@ -5,8 +5,8 @@ export interface Game {
   title: string;
   platforms: { 
     name: PlatformType; 
-    priceSecundaria: number; // Precio más económico (compartida)
-    pricePrimaria: number;   // Precio más alto (cuenta propia)
+    priceSecundaria: number; // Precio formato digital secundaria
+    pricePrimaria: number;   // Precio formato digital primaria
   }[];
   rating: number;
   synopsis: string;
@@ -16,17 +16,15 @@ export interface Game {
   featured?: boolean;
 }
 
-// 👇 1. NÚMERO DE WHATSAPP CENTRALIZADO
-export const WHATSAPP_NUMBER = '3003766780'; // Cambia por tu número real (sin el +)
+// 👇 1. NÚMERO DE WHATSAPP CENTRALIZADO (Sin el +)
+export const WHATSAPP_NUMBER = '3003766780'; 
 
 // 👇 2. MENSAJES DE WHATSAPP CENTRALIZADOS
 export const WHATSAPP_MESSAGES = {
-  // 👇 DEBE SER UN STRING, NO UNA FUNCIÓN. Usa {title} y {platforms} como marcadores
   buyGame: "¡Hola! 🎮 Quiero comprar este juego:\n\n🕹️ *{title}*\n📌 Formatos disponibles: {platforms}\n\n¿Cuál tengo disponible y cómo procedo con el pago?",
   general: "¡Hola! 🎮 Quiero información sobre los juegos disponibles.",
   contact: "¡Hola MC Games! 🎮 Necesito información."
 };
-
 
 export const games: Game[] = [
   {
@@ -38,7 +36,7 @@ export const games: Game[] = [
     ],
     rating: 5,
     synopsis: 'Embárcate en un viaje épico y emotivo mientras Kratos y Atreus luchan por aferrarse a la verdad. El Fimbulvetr ya ha comenzado y ambos deben viajar a cada uno de los Nueve Reinos en busca de respuestas.',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=800&fit=crop',
+    image: 'https://res.cloudinary.com/lhzest5p/image/upload/v1785373262/profebajando2_bi1obc.jpg',
     genre: 'Acción / Aventura',
     releaseYear: 2022,
     featured: true,
@@ -129,12 +127,26 @@ export const games: Game[] = [
       { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
     ],
     rating: 4,
-    synopsis: 'Desde los cenizas de una nación devastada, nace una leyenda. Kait Diaz debe desenterrar su conexión con el enemigo y descubrir la verdadera amenaza para Sera en esta épica aventura de acción en tercera persona.',
+    synopsis: 'Desde las cenizas de una nación devastada, nace una leyenda. Kait Diaz debe desenterrar su conexión con el enemigo y descubrir la verdadera amenaza para Sera.',
     image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=600&h=800&fit=crop',
     genre: 'Shooter / Acción',
     releaseYear: 2019,
   },
+  {
+    id: 'JUEGO DE MAURICIO',
+    title: 'MAURICIO 1',
+    platforms: [
+      { name: 'PS4', priceSecundaria: 35000, pricePrimaria: 70000 }
+    ],
+    rating: 3,
+    synopsis: 'Aventura única personalizada de alta tensión.',
+    image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=600&h=800&fit=crop',
+    genre: 'Shooter / Acción',
+    releaseYear: 2019,
+  }
 ];
+
+// /src/data/games.ts
 
 // Función para formatear el precio en pesos colombianos (COP)
 export const formatCOP = (amount: number) => {
@@ -143,4 +155,15 @@ export const formatCOP = (amount: number) => {
     currency: 'COP',
     minimumFractionDigits: 0
   }).format(amount);
+};
+
+// Alias de exportación para compatibilidad
+export const formatPrice = formatCOP;
+
+export const getMinPrimaryPrice = (platforms: Game['platforms']) => {
+  return Math.min(...platforms.map(p => p.pricePrimaria));
+};
+
+export const getPlatformNames = (platforms: Game['platforms']) => {
+  return platforms.map(p => p.name).join(' / ');
 };

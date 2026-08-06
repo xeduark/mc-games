@@ -2,7 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
-import GameCatalog from '../components/GameCatalog.astro'; // 
+import GameCatalog from '../components/GameCatalog.astro';
+import GameModal from '../components/GameModal.astro'; // 👈 1. IMPORTAR EL MODAL
 import Footer from '../components/Footer.astro';
 import { games, WHATSAPP_NUMBER } from '../data/games';
 import '../styles/global.css';
@@ -12,9 +13,12 @@ import '../styles/global.css';
   <Header />
   <main>
     <Hero />
-    <GameCatalog /> <!-- <- El catálogo ya incluye el modal internamente -->
+    <GameCatalog /> 
   </main>
   <Footer />
+
+  <!-- 👈 2. RENDERIZAR EL MODAL AQUÍ (al final del body, antes del script) -->
+  <GameModal />
 
   <!-- Botón flotante de WhatsApp -->
   <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=¡Hola!%20Quiero%20información%20sobre%20juegos%20🎮`} target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 z-50 w-14 h-14 md:w-16 md:h-16 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 hover:scale-110 transition-all duration-300 whatsapp-pulse" aria-label="Contactar por WhatsApp">
