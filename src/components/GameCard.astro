@@ -1,9 +1,17 @@
 ---
-// GameCard.astro
-import PlayStationLogo from './PlayStationLogo.astro';
-import { WHATSAPP_NUMBER, WHATSAPP_MESSAGES } from '../data/games';
-import { formatCOP, getMinPrimaryPrice, getPlatformNames } from '../utils/gameUtils';
-import type { Game } from '../data/games';
+import PlayStationLogo from "./PlayStationLogo.astro";
+
+import {
+  WHATSAPP_NUMBER,
+  WHATSAPP_MESSAGES,
+  formatCOP,
+  getPlatformPrices,
+} from "../data/games";
+
+import type {
+  Game,
+  PlatformType,
+} from "../data/games";
 
 interface Props {
   game: Game;
@@ -11,154 +19,486 @@ interface Props {
 
 const { game } = Astro.props;
 
-const platformNames = getPlatformNames(game.platforms);
-const minPrice = getMinPrimaryPrice(game.platforms);
-const platformsArray = game.platforms.map(p => p.name);
-const platformsStr = platformsArray.join(',');
+// ============================================================
+// PLATAFORMAS
+// ============================================================
 
-const hasPs4 = platformsArray.includes('PS4');
-const hasPs5 = platformsArray.includes('PS5');
+const platformsArray = game.platforms.map(
+  (platform) => platform.name
+);
+
+const hasPs4 = platformsArray.includes("PS4");
+const hasPs5 = platformsArray.includes("PS5");
+
 const isDualPlatform = hasPs4 && hasPs5;
 const isPs5Only = hasPs5 && !hasPs4;
 
-const whatsappMsg = WHATSAPP_MESSAGES.buyGame
-  .replace('{title}', game.title)
-  .replace('{platforms}', platformNames);
+// ============================================================
+// DATOS DE PRECIOS
+// ============================================================
 
-const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMsg)}`;
+const ps4Prices = getPlatformPrices(
+  game.platforms,
+  "PS4"
+);
+
+const ps5Prices = getPlatformPrices(
+  game.platforms,
+  "PS5"
+);
+
+// ============================================================
+// PLATAFORMA INICIAL
+//
+// Si existe PS4, comenzamos mostrando PS4.
+// Si no, mostramos PS5.
+// El catálogo podrá cambiarlo dinámicamente.
+// ============================================================
+
+const initialPlatform: PlatformType =
+  hasPs4 ? "PS4" : "PS5";
+
+const initialPrices =
+  initialPlatform === "PS4"
+    ? ps4Prices
+    : ps5Prices;
+
+// ============================================================
+// WHATSAPP
+// ============================================================
+
+const platformNames =
+  platformsArray.join(" / ");
+
+const whatsappMsg =
+  WHATSAPP_MESSAGES.buyGame
+    .replace("{title}", game.title)
+    .replace("{platforms}", platformNames);
+
+const whatsappUrl =
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    whatsappMsg
+  )}`;
 ---
 
-<div
-  class="btn-ver-detalles game-card-wrapper w-full cursor-pointer select-none group h-full"
-  data-game-id={game.id}
-  data-platforms={platformsStr}
-  data-platforms-json={JSON.stringify(game.platforms)}
+<!-- ============================================================
+     CARD COMPLETA
+     ============================================================ -->
+
+<article
+  class="group h-full flex flex-col overflow-hidden rounded-[14px] border shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+  style="
+    background-color: var(--color-card-bg);
+    border-color: var(--color-card-border);
+  "
+  data-card-game-id={game.id}
+  data-card-platform={initialPlatform}
 >
-  <div 
-    class="game-card group relative rounded-[16px] overflow-hidden shadow-xl hover:shadow-amber-500/10 transition-all duration-300 flex flex-col h-full border"
-    style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
-  >
-    
-    <!-- 1. ENCABEZADO OFICIAL PLAYSTATION -->
-    {isDualPlatform ? (
-      <div class="w-full flex h-8 sm:h-9 select-none overflow-hidden rounded-t-[14px] border-b" style="border-color: var(--color-card-border);">
-        <div class="w-1/2 bg-[#003791] text-white flex items-center justify-between px-3 py-1 font-sans">
-          <div class="flex items-center gap-1.5">
-            <PlayStationLogo class="w-4 h-4 text-white" fill="#FFFFFF" />
-            <span class="font-gaming font-black text-xs sm:text-sm italic">PS4</span>
-          </div>
-          <span class="text-[9px] opacity-70 hidden sm:inline">TM</span>
+
+  <!-- ==========================================================
+       1. ENCABEZADO PLAYSTATION
+       ========================================================== -->
+
+  {isDualPlatform ? (
+
+    <!-- PS4 + PS5 -->
+    <div
+      class="w-full flex h-8 sm:h-9 select-none overflow-hidden rounded-t-[14px] border-b"
+      style="border-color: var(--color-card-border);"
+    >
+
+      <!-- ======================================================
+           PS4
+           ====================================================== -->
+
+      <div
+        class="platform-header-ps4 w-1/2 bg-[#003791] text-white flex items-center justify-between px-3 py-1 font-sans"
+      >
+
+        <div class="flex items-center gap-1.5">
+
+          <PlayStationLogo
+            class="w-4 h-4 text-white"
+            fill="#FFFFFF"
+          />
+
+          <span
+            class="font-gaming font-black text-xs sm:text-sm italic"
+          >
+            PS4
+          </span>
+
         </div>
 
-        <div class="w-1/2 bg-white text-black flex items-center justify-between px-3 py-1 font-sans border-l border-gray-200">
-          <div class="flex items-center gap-1.5">
-            <PlayStationLogo class="w-4 h-4 text-black" fill="#000000" />
-            <span class="font-gaming font-black text-xs sm:text-sm italic text-black">PS5</span>
-          </div>
-          <span class="text-[9px] text-gray-500 hidden sm:inline">TM</span>
-        </div>
+        <span class="text-[9px] opacity-70 hidden sm:inline">
+          TM
+        </span>
+
       </div>
-    ) : isPs5Only ? (
-      <div class="w-full bg-white text-black flex items-center justify-between px-3.5 py-1.5 h-8 sm:h-9 border-b border-gray-200 rounded-t-[14px] select-none">
-        <div class="flex items-center gap-2">
-          <PlayStationLogo class="w-4 h-4 text-black" fill="#000000" />
-          <span class="font-gaming font-black text-xs sm:text-sm italic tracking-wide text-black">PS5</span>
+
+
+      <!-- ======================================================
+           PS5
+           ====================================================== -->
+
+      <div
+        class="platform-header-ps5 w-1/2 bg-white text-black flex items-center justify-between px-3 py-1 border-l border-gray-200"
+      >
+
+        <div class="flex items-center gap-1.5">
+
+          <PlayStationLogo
+            class="w-4 h-4 text-black"
+            fill="#000000"
+          />
+
+          <span
+            class="font-gaming font-black text-xs sm:text-sm italic"
+          >
+            PS5
+          </span>
+
         </div>
-        <span class="text-[9px] text-gray-400 uppercase tracking-widest font-bold hidden sm:inline">PlayStation 5</span>
+
+        <span
+          class="text-[9px] text-gray-500 hidden sm:inline"
+        >
+          TM
+        </span>
+
       </div>
-    ) : (
-      <div class="w-full bg-[#003791] text-white flex items-center justify-between px-3.5 py-1.5 h-8 sm:h-9 border-b border-blue-900 rounded-t-[14px] select-none">
-        <div class="flex items-center gap-2">
-          <PlayStationLogo class="w-4 h-4 text-white" fill="#FFFFFF" />
-          <span class="font-gaming font-black text-xs sm:text-sm italic tracking-wide text-white">PS4</span>
-        </div>
-        <span class="text-[9px] text-blue-200 uppercase tracking-widest font-bold hidden sm:inline">PlayStation 4</span>
+
+    </div>
+
+  ) : isPs5Only ? (
+
+    <!-- ========================================================
+         SOLO PS5
+         ======================================================== -->
+
+    <div
+      class="w-full bg-white text-black flex items-center justify-between px-3.5 py-1.5 h-8 sm:h-9 border-b border-gray-200 rounded-t-[14px] select-none"
+    >
+
+      <div class="flex items-center gap-2">
+
+        <PlayStationLogo
+          class="w-4 h-4 text-black"
+          fill="#000000"
+        />
+
+        <span
+          class="font-gaming font-black text-xs sm:text-sm italic tracking-wide text-black"
+        >
+          PS5
+        </span>
+
       </div>
+
+      <span
+        class="text-[9px] text-gray-400 uppercase tracking-widest font-bold hidden sm:inline"
+      >
+        PlayStation 5
+      </span>
+
+    </div>
+
+  ) : (
+
+    <!-- ========================================================
+         SOLO PS4
+         ======================================================== -->
+
+    <div
+      class="w-full bg-[#003791] text-white flex items-center justify-between px-3.5 py-1.5 h-8 sm:h-9 border-b border-blue-900 rounded-t-[14px] select-none"
+    >
+
+      <div class="flex items-center gap-2">
+
+        <PlayStationLogo
+          class="w-4 h-4 text-white"
+          fill="#FFFFFF"
+        />
+
+        <span
+          class="font-gaming font-black text-xs sm:text-sm italic tracking-wide text-white"
+        >
+          PS4
+        </span>
+
+      </div>
+
+      <span
+        class="text-[9px] text-blue-200 uppercase tracking-widest font-bold hidden sm:inline"
+      >
+        PlayStation 4
+      </span>
+
+    </div>
+
+  )}
+
+
+  <!-- ==========================================================
+       2. CARÁTULA
+       ========================================================== -->
+
+  <div
+    class="relative aspect-[3/4] w-full overflow-hidden bg-slate-950"
+  >
+
+    <img
+      src={game.image}
+      alt={game.title}
+      class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+      loading="lazy"
+    />
+
+
+    <!-- Brillo lateral -->
+
+    <div
+      class="absolute top-0 bottom-0 left-0 w-2.5 bg-gradient-to-r from-white/30 via-white/10 to-transparent pointer-events-none z-10"
+    ></div>
+
+
+    <!-- Juego destacado -->
+
+    {game.featured && (
+
+      <span
+        class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg uppercase tracking-wider z-10"
+      >
+        ⭐ TOP
+      </span>
+
     )}
 
-    <!-- 2. CARÁTULA Y OVERLAY HOVER -->
-    <div class="relative aspect-[3/4] w-full overflow-hidden bg-slate-950">
-      <img
-        src={game.image}
-        alt={game.title}
-        class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
-        loading="lazy"
-      />
 
-      <div class="absolute top-0 bottom-0 left-0 w-2.5 bg-gradient-to-r from-white/30 via-white/10 to-transparent pointer-events-none z-10"></div>
+    <!-- Overlay -->
 
-      {game.featured && (
-        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg uppercase tracking-wider z-10">
-          ⭐ TOP
-        </span>
-      )}
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"
+    ></div>
 
-      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
 
-      {/* PILL DE PRECIO EN AMARILLO/DORADO */}
-      <div class="absolute bottom-3 left-3 right-3 z-10">
-        <div class="px-3 py-2 rounded-xl bg-slate-950/80 backdrop-blur-md border border-amber-500/40 shadow-lg flex items-center justify-between">
-          <span class="text-xs text-slate-300 font-medium">Desde</span>
-          <span class="font-gaming font-black text-base sm:text-lg text-amber-400 tracking-tight">
-            {formatCOP(minPrice)}
+    <!-- ========================================================
+         PRECIO
+         
+         SOLO MOSTRAMOS PRIMARIA
+         ======================================================== -->
+
+    <div
+      class="absolute bottom-3 left-3 right-3 z-10"
+    >
+
+      <div
+        class="card-price-box px-3 py-2.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-amber-500/40 shadow-lg"
+      >
+
+        <!-- Plataforma + etiqueta -->
+
+        <div
+          class="flex items-center justify-between gap-3"
+        >
+
+          <span
+            class="card-platform-label text-[10px] text-slate-400 font-bold uppercase tracking-wider"
+          >
+            {initialPlatform}
           </span>
+
+          <span
+            class="text-[9px] text-slate-500 uppercase tracking-wider"
+          >
+            Primaria
+          </span>
+
         </div>
+
+
+        <!-- Precio -->
+
+        <div class="mt-0.5">
+
+          <span
+            class="card-price-primary font-gaming font-black text-lg sm:text-xl text-amber-400 tracking-tight"
+          >
+            {initialPrices
+              ? formatCOP(initialPrices.pricePrimaria)
+              : "--"}
+          </span>
+
+        </div>
+
       </div>
+
     </div>
 
-    <!-- 3. DETALLES Y BOTONES DE ACCIÓN -->
-    <div class="p-4 flex flex-col flex-grow justify-between" style="background-color: var(--color-card-bg);">
-      <div>
-        <h3 class="font-gaming font-bold text-sm sm:text-base text-white mb-1.5 line-clamp-2 min-h-[2.5rem] leading-tight group-hover:text-amber-400 transition-colors">
-          {game.title}
-        </h3>
-
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-xs text-slate-400">{game.genre}</span>
-          <span class="text-slate-600">•</span>
-          <span class="text-xs text-slate-400">{game.releaseYear}</span>
-        </div>
-
-        {/* CALIFICACIÓN DE ESTRELLAS EN AMARILLO */}
-        <div class="flex items-center gap-1 mb-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <span class={`text-sm ${i < game.rating ? 'star-filled text-amber-400' : 'star-empty text-slate-700'}`}>
-              ★
-            </span>
-          ))}
-          <span class="text-xs text-slate-400 ml-1 font-bold">
-            ({game.rating}.0)
-          </span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 mt-auto pt-2.5 border-t" style="border-color: var(--color-card-border);">
-        <button
-          type="button"
-          class="btn-ver-detalles py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-slate-950 active:scale-95"
-          data-game-id={game.id}
-          title="Ver Detalles"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-          </svg>
-          <span>Detalles</span>
-        </button>
-
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onclick="event.stopPropagation()"
-          class="py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95"
-        >
-          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-          </svg>
-          <span>WhatsApp</span>
-        </a>
-      </div>
-    </div>
   </div>
-</div>
+
+
+  <!-- ==========================================================
+       3. INFORMACIÓN
+       ========================================================== -->
+
+  <div
+    class="p-4 flex flex-col flex-grow justify-between"
+    style="background-color: var(--color-card-bg);"
+  >
+
+    <div>
+
+      <!-- Título -->
+
+      <h3
+        class="font-gaming font-bold text-sm sm:text-base text-white mb-1.5 line-clamp-2 min-h-[2.5rem] leading-tight group-hover:text-amber-400 transition-colors"
+      >
+        {game.title}
+      </h3>
+
+
+      <!-- Género + año -->
+
+      <div
+        class="flex items-center gap-2 mb-2"
+      >
+
+        <span class="text-xs text-slate-400">
+          {game.genre}
+        </span>
+
+        <span class="text-slate-600">
+          •
+        </span>
+
+        <span class="text-xs text-slate-400">
+          {game.releaseYear}
+        </span>
+
+      </div>
+
+
+      <!-- ======================================================
+           ESTRELLAS
+           ====================================================== -->
+
+      <div
+        class="flex items-center gap-1 mb-4"
+      >
+
+        {Array.from({ length: 5 }).map((_, i) => (
+
+          <span
+            class={`text-sm ${
+              i < game.rating
+                ? "star-filled text-amber-400"
+                : "star-empty text-slate-700"
+            }`}
+          >
+            ★
+          </span>
+
+        ))}
+
+        <span
+          class="text-xs text-slate-400 ml-1 font-bold"
+        >
+          ({game.rating}.0)
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- ========================================================
+         4. BOTONES
+         ======================================================== -->
+
+    <div
+      class="grid grid-cols-2 gap-2 mt-auto pt-2.5 border-t"
+      style="border-color: var(--color-card-border);"
+    >
+
+      <!-- ======================================================
+           DETALLES
+           
+           IMPORTANTE:
+           Solo dejamos data-game-id.
+           ====================================================== -->
+
+      <button
+        type="button"
+        class="btn-ver-detalles py-2 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-slate-950 active:scale-95"
+        data-game-id={game.id}
+        title="Ver Detalles"
+      >
+
+        <svg
+          class="w-3.5 h-3.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7z"
+          />
+
+        </svg>
+
+        <span>
+          Detalles
+        </span>
+
+      </button>
+
+
+      <!-- ======================================================
+           WHATSAPP
+           ====================================================== -->
+
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onclick="event.stopPropagation()"
+        class="py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95"
+      >
+
+        <!-- WhatsApp icon -->
+
+        <svg
+          class="w-3.5 h-3.5"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+
+          <path
+            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+          />
+
+        </svg>
+
+        <span>
+          WhatsApp
+        </span>
+
+      </a>
+
+    </div>
+
+  </div>
+
+</article>

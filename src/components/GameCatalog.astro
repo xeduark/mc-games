@@ -1,173 +1,499 @@
+
 ---
-// src/components/GameCatalog.astro
 import GameCard from './GameCard.astro';
 import { games } from '../data/games';
 ---
 
-<section id="catalogo" class="py-12 bg-slate-950 text-slate-100 transition-colors duration-300">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-10">
-      <h2 class="font-gaming font-bold text-2xl sm:text-4xl text-white mb-3">
-        CATÁLOGO DE <span class="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 bg-clip-text text-transparent">JUEGOS</span>
-      </h2>
-      <p class="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
-        Explora nuestros títulos en formato digital para PS4 y PS5 con activación inmediata.
-      </p>
-    </div>
+<div
+  class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm"
+>
+  <!-- BUSCADOR -->
+  <div class="relative w-full md:w-80">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="Buscar juego por título..."
+      class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-amber-500 text-sm text-white focus:outline-none transition-all"
+    />
 
-    <!-- Buscador y Filtro por Plataforma -->
-    <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm">
-      <div class="relative w-full md:w-80">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Buscar juego por título..."
-          class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-amber-500 text-sm text-white focus:outline-none transition-all"
-        />
-        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-      </div>
-
-      <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0" id="platform-filters">
-        <button data-filter="all" class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-md">
-          Todos
-        </button>
-        <button data-filter="PS4" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">
-          PS4
-        </button>
-        <button data-filter="PS5" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">
-          PS5
-        </button>
-      </div>
-    </div>
-
-    <!-- Carrusel de Juegos (Máximo 4 por vista, pasados 1 a 1) -->
-    <div class="relative group">
-      <!-- Botón Anterior -->
-      <button
-        id="carousel-prev"
-        class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-950/90 border border-amber-500/50 text-amber-400 flex items-center justify-center shadow-2xl hover:bg-amber-500 hover:text-slate-950 hover:scale-110 active:scale-95 transition-all duration-300"
-        aria-label="Anterior"
-      >
-        <svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
-        </svg>
-      </button>
-
-      <!-- Botón Siguiente -->
-      <button
-        id="carousel-next"
-        class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-950/90 border border-amber-500/50 text-amber-400 flex items-center justify-center shadow-2xl hover:bg-amber-500 hover:text-slate-950 hover:scale-110 active:scale-95 transition-all duration-300"
-        aria-label="Siguiente"
-      >
-        <svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
-        </svg>
-      </button>
-
-      <!-- Contenedor del Carrusel (Max 4 cards en desktop lg) -->
-      <div
-        id="games-carousel"
-        class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory py-4 -mx-2 px-2 gap-5"
-        style="scrollbar-width: none; -ms-overflow-style: none;"
-      >
-        {games.map((game) => (
-          <div
-            class="game-card-slide w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-15px)] flex-shrink-0 snap-start"
-            data-platforms={game.platforms.map(p => p.name).join(',')}
-          >
-            <GameCard game={game} />
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <!-- Mensaje cuando no hay resultados -->
-    <div id="no-results" class="hidden text-center py-12">
-      <p class="text-slate-400 font-medium">No se encontraron juegos que coincidan con tu búsqueda.</p>
-    </div>
+    <svg
+      class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+    </svg>
   </div>
-</section>
+
+  <!-- FILTROS -->
+  <div
+    class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0"
+    id="platform-filters"
+  >
+    <button
+      type="button"
+      data-filter="all"
+      class="filter-btn active px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-md"
+    >
+      Todos
+    </button>
+
+    <button
+      type="button"
+      data-filter="PS4"
+      class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700"
+    >
+      PS4
+    </button>
+
+    <button
+      type="button"
+      data-filter="PS5"
+      class="filter-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700"
+    >
+      PS5
+    </button>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- CARRUSEL -->
+<!-- ========================================================= -->
+
+<div class="relative group">
+
+  <!-- BOTÓN ANTERIOR -->
+  <button
+    id="carousel-prev"
+    type="button"
+    class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-950/90 border border-amber-500/50 text-amber-400 flex items-center justify-center shadow-2xl hover:bg-amber-500 hover:text-slate-950 hover:scale-110 active:scale-95 transition-all duration-300"
+    aria-label="Anterior"
+  >
+    <svg
+      class="w-6 h-6 stroke-[2.5]"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2.5"
+        d="M15 19l-7-7 7-7"
+      />
+    </svg>
+  </button>
+
+  <!-- BOTÓN SIGUIENTE -->
+  <button
+    id="carousel-next"
+    type="button"
+    class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-950/90 border border-amber-500/50 text-amber-400 flex items-center justify-center shadow-2xl hover:bg-amber-500 hover:text-slate-950 hover:scale-110 active:scale-95 transition-all duration-300"
+    aria-label="Siguiente"
+  >
+    <svg
+      class="w-6 h-6 stroke-[2.5]"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2.5"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  </button>
+
+  <!-- ======================================================= -->
+  <!-- CONTENEDOR DE JUEGOS -->
+  <!-- ======================================================= -->
+
+  <div
+    id="games-carousel"
+    class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory py-4 -mx-2 px-2 gap-5"
+    style="scrollbar-width: none; -ms-overflow-style: none;"
+  >
+
+    {games.map((game) => {
+      const ps4 = game.platforms.find((p) => p.name === 'PS4');
+      const ps5 = game.platforms.find((p) => p.name === 'PS5');
+
+      const hasPs4 = !!ps4;
+      const hasPs5 = !!ps5;
+
+      /*
+       * Para aparecer en "Todos":
+       *
+       * PS4 y PS5 deben existir.
+       *
+       * Y además:
+       * PS4 Primaria = PS5 Primaria
+       * PS4 Secundaria = PS5 Secundaria
+       */
+      const samePrices =
+        !!ps4 &&
+        !!ps5 &&
+        ps4.pricePrimaria === ps5.pricePrimaria &&
+        ps4.priceSecundaria === ps5.priceSecundaria;
+
+      const showInAll =
+        hasPs4 &&
+        hasPs5 &&
+        samePrices;
+
+      return (
+        <div
+          class="game-card-slide w-full sm:w-[calc(50%-10px)] md:w-[calc(33.333%-14px)] lg:w-[calc(25%-15px)] flex-shrink-0 snap-start"
+          data-game-id={game.id}
+          data-title={game.title.toLowerCase()}
+          data-has-ps4={hasPs4 ? 'true' : 'false'}
+          data-has-ps5={hasPs5 ? 'true' : 'false'}
+          data-show-all={showInAll ? 'true' : 'false'}
+        >
+          <GameCard game={game} />
+        </div>
+      );
+    })}
+
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- SIN RESULTADOS -->
+<!-- ========================================================= -->
+
+<div
+  id="no-results"
+  class="hidden text-center py-12"
+>
+  <p class="text-slate-400 font-medium">
+    No se encontraron juegos que coincidan con tu búsqueda.
+  </p>
+</div>
+
+<!-- ========================================================= -->
+<!-- SCRIPT DE FILTROS Y CARRUSEL -->
+<!-- ========================================================= -->
+
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
-    const filterButtons = document.querySelectorAll('#platform-filters button');
-    const cards = document.querySelectorAll('.game-card-slide') as NodeListOf<HTMLElement>;
-    const noResults = document.getElementById('no-results');
-    const carousel = document.getElementById('games-carousel');
-    const btnPrev = document.getElementById('carousel-prev');
-    const btnNext = document.getElementById('carousel-next');
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput =
+      document.getElementById("search-input");
 
-    let currentFilter = 'all';
-    let currentSearch = '';
+    const filterButtons =
+      document.querySelectorAll<HTMLButtonElement>(".filter-btn");
 
-    // Deslizar 1 tarjeta a la vez en el carrusel
-    function scrollCarousel(direction: 'prev' | 'next') {
-      if (!carousel) return;
-      const visibleCards = Array.from(cards).filter(c => c.style.display !== 'none');
-      if (visibleCards.length === 0) return;
+    const slides =
+      document.querySelectorAll<HTMLElement>(".game-card-slide");
 
-      const cardWidth = visibleCards[0].offsetWidth + 20; // Ancho tarjeta + espaciado gap
-      const scrollAmount = direction === 'next' ? cardWidth : -cardWidth;
+    const noResults =
+      document.getElementById("no-results");
 
-      carousel.scrollBy({
-        left: scrollAmount,
-        behavior: 'smooth'
+    const carousel =
+      document.getElementById("games-carousel");
+
+    const prevButton =
+      document.getElementById("carousel-prev");
+
+    const nextButton =
+      document.getElementById("carousel-next");
+
+    /*
+     * =======================================================
+     * FILTRO ACTUALMENTE SELECCIONADO
+     * =======================================================
+     */
+
+    let activeFilter = "all";
+
+
+    /*
+     * =======================================================
+     * ACTUALIZAR ESTADO VISUAL DE LOS BOTONES
+     * =======================================================
+     */
+
+    function updateActiveButton(
+      activeButton: HTMLButtonElement
+    ) {
+      filterButtons.forEach((button) => {
+        button.classList.remove(
+          "active",
+          "bg-gradient-to-r",
+          "from-amber-500",
+          "to-yellow-500",
+          "text-black",
+          "shadow-md"
+        );
+
+        button.classList.add(
+          "bg-slate-800",
+          "text-slate-300"
+        );
       });
+
+      activeButton.classList.remove(
+        "bg-slate-800",
+        "text-slate-300"
+      );
+
+      activeButton.classList.add(
+        "active",
+        "bg-gradient-to-r",
+        "from-amber-500",
+        "to-yellow-500",
+        "text-black",
+        "shadow-md"
+      );
     }
 
-    btnPrev?.addEventListener('click', () => scrollCarousel('prev'));
-    btnNext?.addEventListener('click', () => scrollCarousel('next'));
 
-    function updateCatalog() {
+    /*
+     * =======================================================
+     * APLICAR FILTROS
+     * =======================================================
+     */
+
+    function applyFilters() {
+      const searchTerm =
+        searchInput instanceof HTMLInputElement
+          ? searchInput.value.trim().toLowerCase()
+          : "";
+
       let visibleCount = 0;
 
-      cards.forEach((card) => {
-        const titleEl = card.querySelector('h3');
-        const title = titleEl ? titleEl.textContent?.toLowerCase() || '' : '';
-        const platformsStr = card.getAttribute('data-platforms') || '';
-        const platforms = platformsStr.split(',');
 
-        const matchesSearch = title.includes(currentSearch);
-        const matchesPlatform = currentFilter === 'all' || platforms.includes(currentFilter);
+      slides.forEach((slide) => {
+        const title =
+          slide.dataset.title || "";
 
-        if (matchesSearch && matchesPlatform) {
-          card.style.display = 'block';
+        const hasPs4 =
+          slide.dataset.hasPs4 === "true";
+
+        const hasPs5 =
+          slide.dataset.hasPs5 === "true";
+
+        const showInAll =
+          slide.dataset.showAll === "true";
+
+
+        /*
+         * ===================================================
+         * BUSCADOR
+         * ===================================================
+         */
+
+        const matchesSearch =
+          title.includes(searchTerm);
+
+
+        /*
+         * ===================================================
+         * FILTRO POR PLATAFORMA
+         * ===================================================
+         */
+
+        let matchesPlatform = false;
+
+
+        if (activeFilter === "all") {
+          /*
+           * TODOS:
+           *
+           * Solo muestra juegos que:
+           * - tengan PS4
+           * - tengan PS5
+           * - tengan exactamente los mismos
+           *   precios Primaria y Secundaria.
+           */
+
+          matchesPlatform = showInAll;
+
+        } else if (activeFilter === "PS4") {
+          /*
+           * PS4:
+           * cualquier juego que tenga PS4.
+           */
+
+          matchesPlatform = hasPs4;
+
+        } else if (activeFilter === "PS5") {
+          /*
+           * PS5:
+           * cualquier juego que tenga PS5.
+           */
+
+          matchesPlatform = hasPs5;
+        }
+
+
+        /*
+         * ===================================================
+         * RESULTADO FINAL
+         * ===================================================
+         */
+
+        const shouldShow =
+          matchesSearch &&
+          matchesPlatform;
+
+
+        if (shouldShow) {
+          slide.classList.remove("hidden");
           visibleCount++;
         } else {
-          card.style.display = 'none';
+          slide.classList.add("hidden");
         }
       });
 
+
+      /*
+       * ===================================================
+       * MENSAJE SIN RESULTADOS
+       * ===================================================
+       */
+
       if (noResults) {
-        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        noResults.classList.toggle(
+          "hidden",
+          visibleCount > 0
+        );
       }
 
+
+      /*
+       * ===================================================
+       * VOLVER AL INICIO DEL CARRUSEL
+       * ===================================================
+       */
+
       if (carousel) {
-        carousel.scrollTo({ left: 0, behavior: 'smooth' });
+        carousel.scrollTo({
+          left: 0,
+          behavior: "smooth",
+        });
       }
     }
 
-    searchInput?.addEventListener('input', (e) => {
-      currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
-      updateCatalog();
-    });
 
-    filterButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        filterButtons.forEach(b => {
-          b.classList.remove('bg-gradient-to-r', 'from-amber-500', 'to-yellow-500', 'text-black', 'shadow-md');
-          b.classList.add('bg-slate-800', 'text-slate-300');
-        });
+    /*
+     * =======================================================
+     * CLICK EN LOS FILTROS
+     * =======================================================
+     */
 
-        btn.classList.remove('bg-slate-800', 'text-slate-300');
-        btn.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-yellow-500', 'text-black', 'shadow-md');
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filter =
+          button.dataset.filter;
 
-        currentFilter = btn.getAttribute('data-filter') || 'all';
-        updateCatalog();
+        if (!filter) {
+          return;
+        }
+
+        activeFilter = filter;
+
+        updateActiveButton(button);
+
+        applyFilters();
       });
     });
+
+
+    /*
+     * =======================================================
+     * BUSCADOR
+     * =======================================================
+     */
+
+    if (searchInput) {
+      searchInput.addEventListener(
+        "input",
+        () => {
+          applyFilters();
+        }
+      );
+    }
+
+
+    /*
+     * =======================================================
+     * CARRUSEL - ANTERIOR
+     * =======================================================
+     */
+
+    prevButton?.addEventListener(
+      "click",
+      () => {
+        if (!carousel) {
+          return;
+        }
+
+        const slide =
+          carousel.querySelector<HTMLElement>(
+            ".game-card-slide:not(.hidden)"
+          );
+
+        const slideWidth =
+          slide
+            ? slide.offsetWidth + 20
+            : carousel.clientWidth;
+
+        carousel.scrollBy({
+          left: -slideWidth,
+          behavior: "smooth",
+        });
+      }
+    );
+
+
+    /*
+     * =======================================================
+     * CARRUSEL - SIGUIENTE
+     * =======================================================
+     */
+
+    nextButton?.addEventListener(
+      "click",
+      () => {
+        if (!carousel) {
+          return;
+        }
+
+        const slide =
+          carousel.querySelector<HTMLElement>(
+            ".game-card-slide:not(.hidden)"
+          );
+
+        const slideWidth =
+          slide
+            ? slide.offsetWidth + 20
+            : carousel.clientWidth;
+
+        carousel.scrollBy({
+          left: slideWidth,
+          behavior: "smooth",
+        });
+      }
+    );
+
+
+    /*
+     * =======================================================
+     * INICIALIZAR
+     * =======================================================
+     */
+
+    applyFilters();
   });
 </script>
+

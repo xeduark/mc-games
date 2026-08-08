@@ -1,194 +1,689 @@
 ---
-// GameModal.astro - Modal interactivo de detalles de juego para MC GAMES
-import { WHATSAPP_NUMBER, WHATSAPP_MESSAGES } from '../data/games';
+import { games, WHATSAPP_NUMBER, WHATSAPP_MESSAGES } from "../data/games";
 ---
 
-<div id="game-modal" class="hidden fixed inset-0 z-[100] items-center justify-center p-4 modal-backdrop bg-black/80 backdrop-blur-md">
-  <div 
-    id="modal-content" 
+<div
+  id="game-modal"
+  class="hidden fixed inset-0 z-[100] items-center justify-center p-4 modal-backdrop bg-black/80 backdrop-blur-md"
+>
+  <div
+    id="modal-content"
     class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border shadow-2xl text-white"
     style="background-color: var(--color-card-bg); border-color: var(--color-card-border);"
-  ></div>
+  >
+  </div>
 </div>
 
-<script define:vars={{ wNumber: WHATSAPP_NUMBER, wBuyMsg: WHATSAPP_MESSAGES.buyGame }}>
-  let currentAccountType = 'primaria';
+<script
+  define:vars={{
+    wNumber: WHATSAPP_NUMBER,
+    wBuyMsg: WHATSAPP_MESSAGES.buyGame,
+    gamesData: games,
+  }}
+>
+  let currentAccountType = "primaria";
+  let currentPlatform = "PS4";
 
-  const formatCOP = function(amount) {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
-  };
+  function formatCOP(amount) {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
 
-  // Escuchar clics globales para cualquier elemento con la clase .btn-ver-detalles o data-game-id
-  document.addEventListener('click', function(e) {
+  /*
+   * ==========================================================
+   * BUSCAR JUEGO
+   * ==========================================================
+   */
+
+  function getGame(gameId) {
+    return gamesData.find((game) => game.id === gameId);
+  }
+
+  /*
+   * ==========================================================
+   * CLICK EN "VER DETALLES"
+   * ==========================================================
+   */
+
+  document.addEventListener("click", function (e) {
     const target = e.target;
+
     if (!(target instanceof Element)) return;
-    
-    // Si se hace clic en el enlace directo de WhatsApp dentro de la card, no abrir modal
+
+    /*
+     * No interferir con enlaces de WhatsApp.
+     */
     if (target.closest('a[href*="wa.me"]')) return;
 
-    const btn = target.closest('.btn-ver-detalles');
+    const btn = target.closest(".btn-ver-detalles");
+
     if (!btn) return;
-    
-    const gameId = btn.getAttribute('data-game-id');
+
+    const gameId = btn.getAttribute("data-game-id");
+
     if (!gameId) return;
-    currentAccountType = 'primaria';
+
+    currentAccountType = "primaria";
+
     openModal(gameId);
   });
 
+  /*
+   * ==========================================================
+   * ABRIR MODAL
+   * ==========================================================
+   */
+
   function openModal(gameId) {
-    const modal = document.getElementById('game-modal');
-    const modalContent = document.getElementById('modal-content');
-    if (!modal || !modalContent || !(modal instanceof HTMLElement) || !(modalContent instanceof HTMLElement)) return;
+    const modal = document.getElementById("game-modal");
+    const modalContent = document.getElementById("modal-content");
 
-    const card = document.querySelector('[data-game-id="' + gameId + '"]');
-    if (!card || !(card instanceof HTMLElement)) return;
+    if (
+      !modal ||
+      !modalContent ||
+      !(modal instanceof HTMLElement) ||
+      !(modalContent instanceof HTMLElement)
+    ) {
+      return;
+    }
 
-    const titleEl = card.querySelector('h3');
-    const title = titleEl ? titleEl.textContent : '';
-    const imgEl = card.querySelector('img');
-    const image = imgEl ? imgEl.src : '';
-    const genreEls = card.querySelectorAll('.text-xs');
-    const genre = genreEls[0] ? genreEls[0].textContent : '';
-    const year = genreEls[1] ? genreEls[1].textContent : '';
-    const stars = card.querySelectorAll('.star-filled').length || 5;
+    /*
+     * Obtener juego directamente desde games.ts.
+     */
 
-    const platformsJson = card.getAttribute('data-platforms-json');
-    const platforms = platformsJson ? JSON.parse(platformsJson) : [];
-    
-    const gamesData = window.__gamesData || {};
-    const gameInfo = gamesData[gameId] || {};
-    const synopsis = gameInfo.synopsis || 'Sinopsis no disponible.';
-    const fullTitle = gameInfo.title || title || '';
+    const game = getGame(gameId);
 
-    // Estrellas en color amarillo/dorado (text-amber-400)
-    let starsHtml = '';
-    for (let i = 0; i < 5; i++) {
-      starsHtml += '<span class="text-xl ' + (i < stars ? 'star-filled text-amber-400' : 'star-empty text-slate-700') + '">★</span>';
+    if (!game) {
+      console.error("No se encontró el juego:", gameId);
+      return;
+    }
+
+    /*
+     * ========================================================
+     * DATOS DEL JUEGO
+     * ========================================================
+     */
+
+    const title = game.title;
+    const image = game.image;
+    const genre = game.genre;
+    const year = String(game.releaseYear);
+    const stars = game.rating;
+    const synopsis = game.synopsis;
+    const platforms = game.platforms;
+
+    /*
+     * Si no tiene plataformas, no podemos mostrar el modal.
+     */
+
+    if (!platforms.length) return;
+
+    /*
+     * ========================================================
+     * PLATAFORMA INICIAL
+     *
+     * Si existe PS4, comenzamos en PS4.
+     * Si no, comenzamos en PS5.
+     * ========================================================
+     */
+
+    currentPlatform = platforms.some((platform) => platform.name === "PS4")
+      ? "PS4"
+      : "PS5";
+
+    /*
+     * ========================================================
+     * RENDERIZAR CONTENIDO
+     * ========================================================
+     */
+
+    function getCurrentPlatform() {
+      return platforms.find((platform) => platform.name === currentPlatform);
     }
 
     function renderModalContent() {
-      let platformsListHtml = '';
-      let platformsTextForWA = '';
-      let minPrice = Infinity;
-      
-      for (let i = 0; i < platforms.length; i++) {
-        const p = platforms[i];
-        const currentPrice = currentAccountType === 'primaria' ? p.pricePrimaria : p.priceSecundaria;
-        if (currentPrice < minPrice) minPrice = currentPrice;
+      const currentPlatformData = getCurrentPlatform();
 
-        const icon = p.name === 'PS5' ? '🎯' : (p.name === 'PS4' ? '🕹️' : '🟢');
-        const typeLabel = currentAccountType === 'primaria' ? '(Primaria)' : '(Secundaria)';
-        
-        // Precio de plataforma en amarillo (text-amber-400)
-        platformsListHtml += '<div class="flex justify-between items-center text-xs sm:text-sm py-2 border-b border-slate-800/80 last:border-0">' +
-          '<span class="text-slate-300 font-medium flex items-center gap-2">' + icon + ' ' + p.name + ' <span class="text-xs text-amber-400 font-bold">' + typeLabel + '</span></span>' +
-          '<span class="font-gaming font-bold text-amber-400">' + formatCOP(currentPrice) + '</span>' +
-        '</div>';
-        
-        platformsTextForWA += p.name + ' ' + typeLabel + ' (' + formatCOP(currentPrice) + ')';
-        if (i < platforms.length - 1) platformsTextForWA += ', ';
+      if (!currentPlatformData) return;
+
+      /*
+       * ======================================================
+       * PRECIO
+       * ======================================================
+       */
+
+      const currentPrice =
+        currentAccountType === "primaria"
+          ? currentPlatformData.pricePrimaria
+          : currentPlatformData.priceSecundaria;
+
+      /*
+       * ======================================================
+       * PLATAFORMAS DISPONIBLES
+       * ======================================================
+       */
+
+      const availablePlatforms = platforms.map((platform) => platform.name);
+
+      const ps4Available = availablePlatforms.includes("PS4");
+
+      const ps5Available = availablePlatforms.includes("PS5");
+
+      /*
+       * ======================================================
+       * SELECTOR DE PLATAFORMA
+       * ======================================================
+       */
+
+      const platformButtons = [];
+
+      if (ps4Available) {
+        platformButtons.push(`
+          <button
+            id="platform-ps4"
+            type="button"
+            class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              currentPlatform === "PS4"
+                ? "bg-[#003791] text-white shadow-lg"
+                : "bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/50"
+            }"
+          >
+            🎮 PS4
+          </button>
+        `);
       }
 
-      const accountLabel = currentAccountType === 'primaria' ? 'Cuenta Primaria' : 'Cuenta Secundaria';
+      if (ps5Available) {
+        platformButtons.push(`
+          <button
+            id="platform-ps5"
+            type="button"
+            class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              currentPlatform === "PS5"
+                ? "bg-white text-black shadow-lg"
+                : "bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/50"
+            }"
+          >
+            🎮 PS5
+          </button>
+        `);
+      }
+
+      /*
+       * ======================================================
+       * SELECTOR PRIMARIA / SECUNDARIA
+       * ======================================================
+       */
+
+      const btnSecClass =
+        currentAccountType === "secundaria"
+          ? "bg-amber-500 text-slate-950 font-black shadow-lg"
+          : "bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/50";
+
+      const btnPriClass =
+        currentAccountType === "primaria"
+          ? "bg-amber-500 text-slate-950 font-black shadow-lg"
+          : "bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/50";
+
+      /*
+       * ======================================================
+       * WHATSAPP
+       * ======================================================
+       */
+
+      const accountLabel =
+        currentAccountType === "primaria"
+          ? "Cuenta Primaria"
+          : "Cuenta Secundaria";
+
+      const platformsTextForWA = `${currentPlatform} ${accountLabel} (${formatCOP(currentPrice)})`;
+
       const waMsg = wBuyMsg
-        .replace('{title}', fullTitle)
-        .replace('{platforms}', platformsTextForWA + ' | Tipo: ' + accountLabel);
-      
-      const whatsappUrl = 'https://wa.me/' + wNumber + '?text=' + encodeURIComponent(waMsg);
-      const oldPrice = formatCOP(Math.round(minPrice * 1.3));
+        .replace("{title}", title)
+        .replace("{platforms}", platformsTextForWA);
 
-      const btnSecClass = currentAccountType === 'secundaria' ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20' : 'bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/50';
-      const btnPriClass = currentAccountType === 'primaria' ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20' : 'bg-slate-800/80 text-slate-300 hover:text-white border border-slate-700/50';
+      const whatsappUrl =
+        "https://wa.me/" + wNumber + "?text=" + encodeURIComponent(waMsg);
 
-      modalContent.innerHTML = 
-        '<div class="relative flex flex-col md:flex-row animate-scale-in overflow-hidden rounded-3xl">' +
-          '<button id="close-modal" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 backdrop-blur-sm flex items-center justify-center text-slate-300 hover:text-white hover:bg-red-500 transition-colors duration-300">' +
-            '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>' +
-          '</button>' +
-          
-          '<!-- Imagen a la izquierda adaptada a la altura total del modal -->' +
-          '<div class="w-full md:w-5/12 relative bg-slate-950 flex-shrink-0 min-h-[280px] md:min-h-full border-b md:border-b-0 md:border-r border-slate-800/80 overflow-hidden">' +
-            '<img src="' + image + '" alt="' + fullTitle + '" class="w-full h-full min-h-[280px] md:absolute md:inset-0 object-cover object-center" />' +
-          '</div>' +
+      /*
+       * ======================================================
+       * PRECIO ANTERIOR
+       * ======================================================
+       */
 
-          '<!-- Detalle del Juego -->' +
-          '<div class="w-full md:w-7/12 p-6 md:p-8 bg-slate-900 text-white flex flex-col justify-between">' +
-            '<div>' +
-              '<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 mb-3">' + platforms.map(function(p) { return p.name; }).join(' / ') + '</span>' +
-              '<h2 class="font-gaming font-black text-2xl md:text-3xl text-white mb-3 tracking-tight">' + fullTitle + '</h2>' +
-              
-              '<div class="flex items-center justify-center gap-2 mb-6 p-1.5 bg-slate-950 rounded-2xl border border-slate-800">' +
-                '<button id="toggle-sec" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-300 ' + btnSecClass + '">Secundaria (Económica)</button>' +
-                '<button id="toggle-pri" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-300 ' + btnPriClass + '">Primaria (Completa)</button>' +
-              '</div>' +
+      const oldPrice = formatCOP(Math.round(currentPrice * 1.3));
 
-              '<div class="flex items-center gap-3 mb-4">' +
-                '<span class="text-xs text-slate-400 font-medium">' + genre + '</span>' +
-                '<span class="text-slate-700">•</span>' +
-                '<span class="text-xs text-slate-400 font-medium">' + year + '</span>' +
-              '</div>' +
-              '<div class="flex items-center gap-1 mb-5">' + starsHtml + '<span class="text-xs text-slate-400 ml-2 font-bold">(' + stars + '.0 / 5.0)</span></div>' +
-              
-              '<div class="mb-6 bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80">' +
-                '<h3 class="font-gaming font-bold text-xs text-amber-400 mb-2.5 flex items-center gap-2 uppercase tracking-wider">🎮 PRECIOS DISPONIBLES</h3>' +
-                '<div class="space-y-1">' + platformsListHtml + '</div>' +
-              '</div>' +
+      /*
+       * ======================================================
+       * ESTRELLAS
+       * ======================================================
+       */
 
-              '<div class="mb-6">' +
-                '<h3 class="font-gaming font-bold text-xs text-amber-400 mb-2 uppercase tracking-wider">SINOPSIS</h3>' +
-                '<p class="text-xs sm:text-sm text-slate-300 leading-relaxed">' + synopsis + '</p>' +
-              '</div>' +
-            '</div>' +
-            
-            '<div>' +
-              '<!-- Precio principal en Amarillo Dorado -->' +
-              '<div class="flex items-center gap-4 mb-5 pt-4 border-t border-slate-800">' +
-                '<span class="font-gaming font-black text-2xl sm:text-3xl text-amber-400">' + formatCOP(minPrice) + '</span>' +
-                '<span class="text-xs sm:text-sm text-slate-500 line-through">' + oldPrice + '</span>' +
-                '<span class="px-2 py-0.5 rounded-md bg-red-500/20 text-red-400 text-xs font-bold">-30% OFF</span>' +
-              '</div>' +
-              
-              '<!-- Botón de WhatsApp Verde Oficial -->' +
-              '<a href="' + whatsappUrl + '" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all duration-300 shadow-lg shadow-emerald-600/25 active:scale-98">' +
-                '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>' +
-                '¡Quiero comprar este juego!' +
-              '</a>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
+      let starsHtml = "";
 
-      document.getElementById('toggle-sec')?.addEventListener('click', function() {
-        currentAccountType = 'secundaria';
-        renderModalContent();
-      });
-      document.getElementById('toggle-pri')?.addEventListener('click', function() {
-        currentAccountType = 'primaria';
-        renderModalContent();
-      });
+      for (let i = 0; i < 5; i++) {
+        starsHtml +=
+          '<span class="text-xl ' +
+          (i < stars
+            ? "star-filled text-amber-400"
+            : "star-empty text-slate-700") +
+          '">★</span>';
+      }
+
+      /*
+       * ======================================================
+       * INFORMACIÓN DE PLATAFORMA
+       * ======================================================
+       */
+
+      const platformLabel = currentPlatform === "PS4" ? "PS4" : "PS5";
+
+      const platformColor = currentPlatform === "PS4" ? "#003791" : "#ffffff";
+
+      const platformTextColor =
+        currentPlatform === "PS4" ? "#ffffff" : "#000000";
+
+      /*
+       * ======================================================
+       * HTML DEL MODAL
+       * ======================================================
+       */
+
+      modalContent.innerHTML = `
+        <div
+          class="relative flex flex-col md:flex-row animate-scale-in overflow-hidden rounded-3xl"
+        >
+
+          <!-- =================================================
+               CERRAR
+               ================================================= -->
+
+          <button
+            id="close-modal"
+            type="button"
+            class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 backdrop-blur-sm flex items-center justify-center text-slate-300 hover:text-white hover:bg-red-500 transition-colors duration-300"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
+
+          <!-- =================================================
+               IMAGEN
+               ================================================= -->
+
+          <div
+            class="w-full md:w-5/12 relative bg-slate-950 flex-shrink-0 min-h-[280px] md:min-h-full border-b md:border-b-0 md:border-r border-slate-800/80 overflow-hidden"
+          >
+
+            <img
+              src="${image}"
+              alt="${title}"
+              class="w-full h-full min-h-[280px] md:absolute md:inset-0 object-cover object-center"
+            />
+
+            <!-- Plataforma -->
+
+            <div
+              class="absolute top-4 left-4 px-3 py-2 rounded-xl font-black text-sm shadow-xl"
+              style="background:${platformColor}; color:${platformTextColor};"
+            >
+              ${platformLabel}
+            </div>
+
+          </div>
+
+
+          <!-- =================================================
+               DETALLE
+               ================================================= -->
+
+          <div
+            class="w-full md:w-7/12 p-6 md:p-8 bg-slate-900 text-white flex flex-col justify-between"
+          >
+
+            <div>
+
+              <!-- TÍTULO -->
+
+              <h2
+                class="font-gaming font-black text-2xl md:text-3xl text-white mb-3 tracking-tight"
+              >
+                ${title}
+              </h2>
+
+
+              <!-- PLATAFORMA -->
+
+              <div class="mb-4">
+
+                <p
+                  class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2"
+                >
+                  Plataforma
+                </p>
+
+                <div
+                  class="flex items-center gap-2 p-1.5 bg-slate-950 rounded-2xl border border-slate-800"
+                >
+                  ${platformButtons.join("")}
+                </div>
+
+              </div>
+
+
+              <!-- TIPO DE CUENTA -->
+
+              <div class="mb-6">
+
+                <p
+                  class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2"
+                >
+                  Tipo de cuenta
+                </p>
+
+                <div
+                  class="flex items-center gap-2 p-1.5 bg-slate-950 rounded-2xl border border-slate-800"
+                >
+
+                  <button
+                    id="toggle-sec"
+                    type="button"
+                    class="flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${btnSecClass}"
+                  >
+                    Secundaria
+                  </button>
+
+                  <button
+                    id="toggle-pri"
+                    type="button"
+                    class="flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${btnPriClass}"
+                  >
+                    Primaria
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <!-- INFO -->
+
+              <div
+                class="flex items-center gap-3 mb-4"
+              >
+
+                <span
+                  class="text-xs text-slate-400 font-medium"
+                >
+                  ${genre}
+                </span>
+
+                <span class="text-slate-700">
+                  •
+                </span>
+
+                <span
+                  class="text-xs text-slate-400 font-medium"
+                >
+                  ${year}
+                </span>
+
+              </div>
+
+
+              <!-- ESTRELLAS -->
+
+              <div
+                class="flex items-center gap-1 mb-5"
+              >
+
+                ${starsHtml}
+
+                <span
+                  class="text-xs text-slate-400 ml-2 font-bold"
+                >
+                  (${stars}.0 / 5.0)
+                </span>
+
+              </div>
+
+
+              <!-- PRECIO -->
+
+              <div
+                class="mb-6 bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80"
+              >
+
+                <h3
+                  class="font-gaming font-bold text-xs text-amber-400 mb-3 uppercase tracking-wider"
+                >
+                  🎮 PRECIO DISPONIBLE
+                </h3>
+
+                <div
+                  class="flex justify-between items-center"
+                >
+
+                  <span
+                    class="text-slate-300 font-medium text-sm"
+                  >
+                    ${currentPlatform} · ${
+                      currentAccountType === "primaria"
+                        ? "Primaria"
+                        : "Secundaria"
+                    }
+                  </span>
+
+                  <span
+                    class="font-gaming font-bold text-amber-400 text-lg"
+                  >
+                    ${formatCOP(currentPrice)}
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <!-- SINOPSIS -->
+
+              <div class="mb-6">
+
+                <h3
+                  class="font-gaming font-bold text-xs text-amber-400 mb-2 uppercase tracking-wider"
+                >
+                  SINOPSIS
+                </h3>
+
+                <p
+                  class="text-xs sm:text-sm text-slate-300 leading-relaxed"
+                >
+                  ${synopsis}
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PRECIO FINAL
+                 ================================================= -->
+
+            <div>
+
+              <div
+                class="flex items-center gap-4 mb-5 pt-4 border-t border-slate-800"
+              >
+
+                <span
+                  class="font-gaming font-black text-2xl sm:text-3xl text-amber-400"
+                >
+                  ${formatCOP(currentPrice)}
+                </span>
+
+                <span
+                  class="text-xs sm:text-sm text-slate-500 line-through"
+                >
+                  ${oldPrice}
+                </span>
+
+                <span
+                  class="px-2 py-0.5 rounded-md bg-red-500/20 text-red-400 text-xs font-bold"
+                >
+                  -30% OFF
+                </span>
+
+              </div>
+
+
+              <!-- WHATSAPP -->
+
+              <a
+                href="${whatsappUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all duration-300 shadow-lg shadow-emerald-600/25 active:scale-98"
+              >
+                ¡Quiero comprar este juego!
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+      /*
+       * ======================================================
+       * CERRAR MODAL
+       * ======================================================
+       */
+
+      document
+        .getElementById("close-modal")
+        ?.addEventListener("click", closeModal);
+
+      /*
+       * ======================================================
+       * PS4
+       * ======================================================
+       */
+
+      document
+        .getElementById("platform-ps4")
+        ?.addEventListener("click", function () {
+          currentPlatform = "PS4";
+          renderModalContent();
+        });
+
+      /*
+       * ======================================================
+       * PS5
+       * ======================================================
+       */
+
+      document
+        .getElementById("platform-ps5")
+        ?.addEventListener("click", function () {
+          currentPlatform = "PS5";
+          renderModalContent();
+        });
+
+      /*
+       * ======================================================
+       * SECUNDARIA
+       * ======================================================
+       */
+
+      document
+        .getElementById("toggle-sec")
+        ?.addEventListener("click", function () {
+          currentAccountType = "secundaria";
+          renderModalContent();
+        });
+
+      /*
+       * ======================================================
+       * PRIMARIA
+       * ======================================================
+       */
+
+      document
+        .getElementById("toggle-pri")
+        ?.addEventListener("click", function () {
+          currentAccountType = "primaria";
+          renderModalContent();
+        });
     }
+
+    /*
+     * ========================================================
+     * MOSTRAR MODAL
+     * ========================================================
+     */
 
     renderModalContent();
 
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.style.overflow = 'hidden';
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
 
-    const closeBtn = document.getElementById('close-modal');
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', function(ev) {
-      if (ev.target === modal) closeModal();
-    });
+    document.body.style.overflow = "hidden";
+
+    /*
+     * Cerrar haciendo clic fuera del contenido.
+     */
+
+    modal.onclick = function (ev) {
+      if (ev.target === modal) {
+        closeModal();
+      }
+    };
   }
+
+  /*
+   * ==========================================================
+   * CERRAR MODAL
+   * ==========================================================
+   */
 
   function closeModal() {
-    const modal = document.getElementById('game-modal');
+    const modal = document.getElementById("game-modal");
+
     if (!modal || !(modal instanceof HTMLElement)) return;
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.body.style.overflow = '';
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    document.body.style.overflow = "";
   }
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+  /*
+   * ==========================================================
+   * ESCAPE
+   * ==========================================================
+   */
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeModal();
+    }
   });
 </script>
