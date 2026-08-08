@@ -1,0 +1,36 @@
+/* ==========================================================================
+   FOOTER COMPONENTS & SOCIAL LINKS
+   ========================================================================== */
+
+/* --- Redes Sociales Comunes (Instagram, Facebook) --- */
+.social-link-default {
+  background-color: #0f172a; /* bg-slate-900 */
+  border-color: #1e293b;     /* border-slate-800 */
+  color: #94a3b8;            /* text-slate-400 */
+}
+.social-link-default:hover {
+  color: #ffffff;
+  border-color: var(--color-brand-primary);
+}
+
+/* --- Burbuja de Red Social WhatsApp --- */
+.social-link-whatsapp {
+  background-color: #0f172a;
+  border-color: rgba(37, 211, 102, 0.3);
+  color: #34d399;            /* text-emerald-400 */
+}
+.social-link-whatsapp:hover {
+  background-color: var(--color-whatsapp);
+  color: #0f172a;
+  border-color: var(--color-whatsapp);
+}
+
+/* --- Botón Grande de Contacto Directo WhatsApp --- */
+.btn-footer-whatsapp {
+  color: #ffffff;
+  background-color: var(--color-whatsapp);
+}
+.btn-footer-whatsapp:hover {
+  background-color: #20ba5a; /* Un verde un poco más oscuro para el hover */
+  box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3);
+}
