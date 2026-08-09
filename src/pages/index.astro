@@ -3,8 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
 import GameCatalog from '../components/GameCatalog.astro';
-import GameModal from '../components/GameModal.astro'; // 👈 1. IMPORTAR EL MODAL
+import GameModal from '../components/GameModal.astro'; //
 import Footer from '../components/Footer.astro';
+import AccountInfo from '../components/AccountInfo.astro';
+import Sponsors from '../components/Sponsors.astro';
 import { games, WHATSAPP_NUMBER } from '../data/games';
 import '../styles/global.css';
 import '../styles/footer.css';
@@ -14,11 +16,11 @@ import '../styles/footer.css';
   <Header />
   <main>
     <Hero />
+    <AccountInfo />
     <GameCatalog /> 
+    <Sponsors />
   </main>
   <Footer />
-
-  <!-- 👈 2. RENDERIZAR EL MODAL AQUÍ (al final del body, antes del script) -->
   <GameModal />
 
   <!-- Botón flotante de WhatsApp -->
